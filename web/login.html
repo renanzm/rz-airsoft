@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Entrar · RZ Airsoft</title>
+  <meta name="theme-color" content="#090c11" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/assets/favicon.png" type="image/png" sizes="64x64" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <script src="/js/theme-init.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Oswald:wght@500;600;700&display=swap" />
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/login.css" />
+  <script type="module" src="/js/login.js"></script>
+</head>
+<body class="auth">
+  <main class="auth-main">
+    <section class="auth-card" aria-labelledby="auth-title">
+      <header class="auth-brand">
+        <span class="auth-mark"><img src="/assets/logo.png" alt="" width="34" height="34" /></span>
+        <span class="auth-brand-text"><strong>RZ Airsoft</strong><small>Gestão da oficina</small></span>
+      </header>
+
+      <div class="auth-copy">
+        <h1 id="auth-title">Entrar</h1>
+        <p id="auth-desc">Use o usuário e a senha desta instalação.</p>
+      </div>
+
+      <p class="auth-status" id="auth-status" role="status">Verificando acesso…</p>
+
+      <form class="auth-form" id="auth-form" novalidate hidden>
+        <label class="field">
+          <span class="label">Usuário</span>
+          <input class="input input-lg" id="username" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" required />
+          <span class="hint" id="username-hint" hidden>De 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado.</span>
+        </label>
+        <label class="field">
+          <span class="label">Senha</span>
+          <span class="input-wrap">
+            <input class="input input-lg" id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required />
+            <button type="button" class="btn btn-ghost btn-icon btn-sm auth-eye" id="toggle-password" aria-label="Mostrar senha" aria-pressed="false"></button>
+          </span>
+          <span class="strength" id="strength" hidden><span class="strength-bar"><span></span></span><span class="strength-label"></span></span>
+        </label>
+        <label class="field" id="confirm-field" hidden>
+          <span class="label">Confirmar senha</span>
+          <input class="input input-lg" id="confirm" name="confirm" type="password" autocomplete="new-password" maxlength="128" />
+        </label>
+        <label class="check" id="remember-field"><input type="checkbox" id="remember" checked />Manter conectado neste computador</label>
+        <div class="callout callout-danger" id="auth-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit">Entrar</button>
+        <p class="auth-help" id="forgot">Esqueceu a senha? No computador da oficina, abra <strong>REDEFINIR_SENHA.bat</strong> na pasta do sistema.</p>
+      </form>
+
+      <footer class="auth-foot">
+        <span class="auth-secure"><span class="dot dot-success"></span>Conexão com o servidor desta oficina</span>
+      </footer>
+    </section>
+    <p class="auth-note">Os dados ficam no computador da oficina, na pasta sincronizada pelo OneDrive.</p>
+  </main>
+  <noscript><p style="padding:24px;text-align:center">Ative o JavaScript para entrar.</p></noscript>
+</body>
+</html>

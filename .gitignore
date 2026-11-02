@@ -1,0 +1,34 @@
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editores e ferramentas locais
+.vscode/
+.idea/
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# Saídas geradas
+*.pdf
+relatorios-salvos/
+output/
+tmp/
+
+# Dados da oficina: ficam no computador (pasta sincronizada pelo OneDrive),
+# nunca no GitHub — senha (hash), chave das sessões, clientes, OS e fotos.
+# Para levar para outro lugar, use o backup .zip em Configurações > Dados.
+dados/cloud/.auth.json
+dados/cloud/.secret
+dados/cloud/backups/
+dados/cloud/db/
+dados/cloud/files/
+dados/cloud/rz-*.json
+dados/cloud/.tmp-*
+dados/dev/
+
+# Binário baixado à parte
+tools/cloudflared.exe

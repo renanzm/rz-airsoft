@@ -1,0 +1,14 @@
+Esta pasta guarda os dados do RZ Airsoft neste computador.
+O OneDrive sincroniza tudo daqui para a nuvem.
+
+db/            ordens de serviço, clientes, catálogo e configurações (JSON)
+files/         fotos dos relatórios técnicos
+backups/db/    cópias automáticas de cada arquivo de db/, a cada 10 minutos de uso
+backups/completo/  cópia completa feita antes de restaurar um backup
+.auth.json     usuário e hash da senha (a senha em si não fica salva)
+.secret        chave que assina as sessões de login
+rz-*.json      dados da versão anterior; foram importados e ficam só como arquivo
+
+Não apague .auth.json nem .secret: sem eles o login deixa de funcionar.
+Para levar os dados para outro lugar, use Configurações > Dados e backup > Baixar backup (.zip).
+Se precisar mexer à mão nestes arquivos, feche antes a janela do servidor.

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90" viewBox="0 0 120 90" role="img" aria-labelledby="title desc">
+  <title id="title">Conector T-Deans</title>
+  <desc id="desc">Pictograma técnico de um conector T-Deans vermelho com contatos chatos em formato de T.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EF4C4C" />
+      <stop offset="1" stop-color="#A91F2B" />
+    </linearGradient>
+  </defs>
+  <path d="M17 18h85l10 11v51H17L7 69V29Z" fill="#111827" opacity=".72" />
+  <path d="M19 15h81l9 10v51H19L10 66V25Z" fill="url(#body)" stroke="#FF7A7A" stroke-width="2" />
+  <path d="M27 25h64l7 7v34H27l-6-6V31Z" fill="#8D1722" stroke="#6E1019" stroke-width="2" />
+  <rect x="34" y="42" width="27" height="10" rx="2" fill="#D7A63A" stroke="#FFE08A" stroke-width="2" />
+  <rect x="72" y="34" width="10" height="28" rx="2" fill="#D7A63A" stroke="#FFE08A" stroke-width="2" />
+  <path d="M26 21h61" stroke="#FFACAC" stroke-width="2" stroke-linecap="round" opacity=".7" />
+</svg>

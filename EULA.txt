@@ -1,0 +1,51 @@
+RZ AIRSOFT — SISTEMA DE GESTÃO DA OFICINA
+CONTRATO DE LICENÇA DE USO (EULA) — SOFTWARE PROPRIETÁRIO
+
+Copyright (c) 2026 Renan Zacaron — RZ Airsoft. Todos os direitos reservados.
+
+1. TITULARIDADE
+Este software, incluindo código-fonte, código-objeto, layout, telas, documentos
+gerados, textos, logotipos, ícones e demais elementos (o "Software"), é de
+propriedade exclusiva do titular acima e é protegido pela Lei nº 9.609/1998
+(Lei do Software), pela Lei nº 9.610/1998 (Direitos Autorais) e pelos tratados
+internacionais aplicáveis.
+
+2. CÓDIGO VISÍVEL NÃO É CÓDIGO LIVRE
+O fato de o código estar publicado para visualização (por exemplo, num
+repositório público do GitHub) NÃO concede nenhuma licença de uso. Nenhum
+direito é concedido além do que estiver expressamente escrito neste contrato.
+
+3. O QUE É PERMITIDO
+Sem autorização prévia e por escrito do titular, é permitido apenas ler o
+código-fonte no próprio site em que foi publicado e usar os recursos de
+visualização e "fork" que a plataforma exige por seus termos de serviço,
+exclusivamente para leitura.
+
+4. O QUE É PROIBIDO
+Sem autorização prévia e por escrito do titular, é proibido, no todo ou em parte:
+  a) copiar, baixar para uso, reproduzir ou redistribuir o Software;
+  b) instalar, executar ou usar o Software, com ou sem fins comerciais;
+  c) modificar, traduzir, adaptar ou criar obras derivadas;
+  d) vender, alugar, sublicenciar, hospedar ou oferecer o Software como serviço;
+  e) remover ou alterar avisos de direitos autorais, marcas ou este contrato;
+  f) usar a marca "RZ Airsoft", o logotipo ou a identidade visual.
+
+5. LICENÇAS ESPECÍFICAS
+Interessados em usar o Software devem pedir autorização ao titular pelo
+GitHub (https://github.com/renanzm). Qualquer licença concedida será por escrito
+e valerá apenas nos termos nela descritos.
+
+6. COMPONENTES DE TERCEIROS
+As bibliotecas em web/vendor/ (html2canvas e jsPDF) pertencem aos seus autores
+e seguem as próprias licenças (MIT), indicadas nos arquivos. Este contrato não
+se aplica a elas.
+
+7. SEM GARANTIA
+O Software é fornecido "no estado em que se encontra", sem garantias de
+qualquer tipo. O titular não responde por danos decorrentes do uso,
+autorizado ou não.
+
+8. VIOLAÇÕES E FORO
+O uso não autorizado sujeita o infrator às sanções civis e penais previstas
+em lei. Fica eleito o foro da comarca do domicílio do titular para dirimir
+quaisquer questões relativas a este contrato.

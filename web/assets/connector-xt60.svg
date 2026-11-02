@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90" viewBox="0 0 120 90" role="img" aria-labelledby="title desc">
+  <title id="title">Conector XT60</title>
+  <desc id="desc">Pictograma técnico de um conector XT60 amarelo com dois contatos circulares.</desc>
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC824" />
+      <stop offset="1" stop-color="#D89400" />
+    </linearGradient>
+  </defs>
+  <path d="M18 14h69l20 18v37L88 85H18L7 72V28Z" fill="#111827" opacity=".72" />
+  <path d="M20 11h66l18 17v38L86 81H20L10 69V26Z" fill="url(#shell)" stroke="#FFE06E" stroke-width="2" />
+  <path d="M29 23h51l12 11v27L80 70H29L21 62V32Z" fill="#B97A00" stroke="#8B5900" stroke-width="2" />
+  <circle cx="44" cy="47" r="12" fill="#0B1020" stroke="#5F4200" stroke-width="2" />
+  <circle cx="69" cy="47" r="12" fill="#0B1020" stroke="#5F4200" stroke-width="2" />
+  <circle cx="44" cy="47" r="6" fill="#D7A63A" />
+  <circle cx="69" cy="47" r="6" fill="#D7A63A" />
+  <path d="M27 18h50" stroke="#FFF0A3" stroke-width="2" stroke-linecap="round" opacity=".8" />
+</svg>
