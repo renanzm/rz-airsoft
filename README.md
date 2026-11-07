@@ -1,8 +1,12 @@
 # RZ Airsoft — gestão da oficina
 
+**Português** · [English](README.en.md)
+
 Sistema da oficina RZ Airsoft: ordens de serviço, quadro da bancada, relatório técnico em PDF, clientes, catálogo de serviços e preços, banner de divulgação e painel de faturamento.
 
 Roda neste computador, com login e senha. Os dados ficam em `dados/cloud/`, pasta que o OneDrive sincroniza. Dá para abrir de qualquer lugar pelo navegador, com o atalho de internet.
+
+A interface está em português (padrão) e inglês: troque na tela de login, no menu do usuário ou em Configurações › Aparência. A escolha fica salva em cada navegador. Vale também para os PDFs, planilhas e mensagens de WhatsApp gerados a partir daí.
 
 ## Como abrir
 
@@ -41,7 +45,7 @@ Dois aparelhos podem editar ao mesmo tempo: o sistema busca as alterações a ca
 | **Clientes** | Cadastro com WhatsApp, Instagram, cidade, notas e equipamentos; valor pago, última visita e histórico de OS de cada cliente. |
 | **Serviços e preços** | Catálogo por categorias, usado para lançar itens na OS e para gerar a tabela em PDF. |
 | **Marketing** | Banner 1080 × 1350 (4:5) editável, em PDF ou PNG para Instagram e WhatsApp. |
-| **Configurações** | Dados da oficina (aparecem nos documentos), padrões da OS e termos de garantia, conta e senha, tema, dados e backup, acesso remoto. |
+| **Configurações** | Dados da oficina (aparecem nos documentos), padrões da OS e termos de garantia, conta e senha, tema e idioma, dados e backup, acesso remoto. |
 
 **Documentos:** relatório técnico (A4 paisagem), ordem de serviço com itens, total, garantia e assinaturas (A4 retrato), lista de OS (A4 paisagem, paginada), tabela de serviços (A4 retrato) e banner. Cada um pode ser baixado em PDF ou mandado para a impressora.
 
@@ -95,7 +99,7 @@ relatorio-tecnico-rz-airsoft/
 │   ├── index.html, login.html, manifest.webmanifest
 │   ├── css/                  tokens, base, componentes, layout, telas, documentos (PDF)
 │   └── js/
-│       ├── core/             roteador, API, store (otimista, offline, sincronização), modelo, formatação
+│       ├── core/             roteador, API, store (otimista, offline, sincronização), modelo, formatação, idiomas
 │       ├── ui/               barra lateral, paleta Ctrl+K, menus, diálogos, toasts, gráficos, combobox
 │       ├── views/            uma tela por arquivo
 │       ├── docs/             documentos PDF/impressão
@@ -103,6 +107,8 @@ relatorio-tecnico-rz-airsoft/
 ├── tests/web/                testes do front (node --test)
 └── dados/cloud/              dados (sincronizados pelo OneDrive)
 ```
+
+**Traduções:** o texto em português é a chave: `tr("Novo cliente")` busca a tradução em `web/js/core/locales/en.js`. Todo texto novo precisa de uma entrada lá; `tests/web/i18n.test.mjs` falha se faltar. Valores gravados nos dados (tipo de equipamento, unidade de cobrança) ficam em português e são traduzidos ao mostrar, com `trValue()`.
 
 Testes:
 

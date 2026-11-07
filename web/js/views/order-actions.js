@@ -7,6 +7,7 @@ import { todayISO, whatsappLink } from "../core/format.js";
 import { uid } from "../core/util.js";
 import { confirm } from "../ui/dialog.js";
 import { toast } from "../ui/toast.js";
+import { tr } from "../core/i18n.js";
 
 export async function printOrderSheet(order, mode = "print") {
   const { exportOrderSheet } = await import("../docs/order-doc.js");
@@ -21,7 +22,7 @@ export async function reportPdf(order, mode = "pdf") {
 export function openWhatsapp(order, kind) {
   const link = whatsappLink(order.client?.phone || data.client(order.client?.id)?.phone, whatsappMessage(order, data.settings(), kind));
   if (!link) {
-    toast.error("Cliente sem telefone", { description: "Cadastre o WhatsApp do cliente para enviar mensagens." });
+    toast.error(tr("Cliente sem telefone"), { description: tr("Cadastre o WhatsApp do cliente para enviar mensagens.") });
     return;
   }
   window.open(link, "_blank", "noopener");
@@ -30,7 +31,7 @@ export function openWhatsapp(order, kind) {
 export function togglePaid(order) {
   const paid = isPaid(order);
   data.saveOrder({ ...order, payment: { ...order.payment, status: paid ? "pendente" : "pago", paidAt: paid ? "" : order.payment?.paidAt || todayISO() } });
-  toast.success(paid ? `OS ${order.number} marcada como pendente` : `OS ${order.number} marcada como paga`);
+  toast.success(paid ? tr("OS {n} marcada como pendente", { n: order.number }) : tr("OS {n} marcada como paga", { n: order.number }));
 }
 
 export function duplicateOrder(order) {
@@ -44,23 +45,23 @@ export function duplicateOrder(order) {
     report: { ...emptyReport(), technician: order.report?.technician || "" },
   });
   data.saveOrder(copy);
-  toast.success(`OS ${copy.number} criada a partir da ${order.number}`);
+  toast.success(tr("OS {n} criada a partir da {from}", { n: copy.number, from: order.number }));
   navigate(`/ordens/${copy.id}`);
 }
 
 export async function deleteOrder(order, { after } = {}) {
   const ok = await confirm({
-    title: `Excluir a OS ${order.number || ""}?`.replace("  ", " "),
-    message: "A ordem, o relatório técnico e as fotos serão removidos. Uma cópia fica nos backups automáticos.",
-    confirmLabel: "Excluir OS",
+    title: tr("Excluir a OS {n}?", { n: order.number || "" }).replace("  ", " "),
+    message: tr("A ordem, o relatório técnico e as fotos serão removidos. Uma cópia fica nos backups automáticos."),
+    confirmLabel: tr("Excluir OS"),
     danger: true,
   });
   if (!ok) return false;
   const removed = store.remove("orders", order.id);
   after?.();
-  toast.success(`OS ${order.number} excluída`, {
+  toast.success(tr("OS {n} excluída", { n: order.number }), {
     action: {
-      label: "Desfazer",
+      label: tr("Desfazer"),
       run: () => {
         store.restore("orders", removed);
         navigate(`/ordens/${order.id}`);
@@ -74,17 +75,17 @@ export function orderActions(order, { onChange, inDetail = false } = {}) {
   if (!order) return [];
   const hasPhone = Boolean(order.client?.phone);
   return [
-    ...(inDetail ? [] : [{ label: "Abrir OS", icon: "arrowUpRight", run: () => navigate(`/ordens/${order.id}`) }]),
-    { label: "Editar relatório técnico", icon: "fileText", run: () => navigate(`/ordens/${order.id}/relatorio`) },
+    ...(inDetail ? [] : [{ label: tr("Abrir OS"), icon: "arrowUpRight", run: () => navigate(`/ordens/${order.id}`) }]),
+    { label: tr("Editar relatório técnico"), icon: "fileText", run: () => navigate(`/ordens/${order.id}/relatorio`) },
     "-",
-    { label: "Relatório técnico (PDF)", icon: "filePdf", run: () => reportPdf(order, "pdf") },
-    { label: "Ordem de serviço (PDF)", icon: "receipt", hint: "Comprovante com itens e garantia", run: () => printOrderSheet(order, "pdf") },
-    { label: "Imprimir ordem de serviço", icon: "printer", run: () => printOrderSheet(order, "print") },
+    { label: tr("Relatório técnico (PDF)"), icon: "filePdf", run: () => reportPdf(order, "pdf") },
+    { label: tr("Ordem de serviço (PDF)"), icon: "receipt", hint: tr("Comprovante com itens e garantia"), run: () => printOrderSheet(order, "pdf") },
+    { label: tr("Imprimir ordem de serviço"), icon: "printer", run: () => printOrderSheet(order, "print") },
     "-",
-    { label: "Avisar no WhatsApp", icon: "message", disabled: !hasPhone, hint: hasPhone ? "" : "Cliente sem telefone", run: () => openWhatsapp(order) },
-    ...(orderTotal(order) ? [{ label: isPaid(order) ? "Marcar como pendente" : "Marcar como paga", icon: "wallet", run: () => { togglePaid(order); onChange?.(); } }] : []),
-    { label: "Duplicar OS", icon: "copy", run: () => duplicateOrder(order) },
+    { label: tr("Avisar no WhatsApp"), icon: "message", disabled: !hasPhone, hint: hasPhone ? "" : tr("Cliente sem telefone"), run: () => openWhatsapp(order) },
+    ...(orderTotal(order) ? [{ label: isPaid(order) ? tr("Marcar como pendente") : tr("Marcar como paga"), icon: "wallet", run: () => { togglePaid(order); onChange?.(); } }] : []),
+    { label: tr("Duplicar OS"), icon: "copy", run: () => duplicateOrder(order) },
     "-",
-    { label: "Excluir OS", icon: "trash", danger: true, run: () => deleteOrder(order, { after: inDetail ? () => navigate("/ordens") : onChange }) },
+    { label: tr("Excluir OS"), icon: "trash", danger: true, run: () => deleteOrder(order, { after: inDetail ? () => navigate("/ordens") : onChange }) },
   ];
 }

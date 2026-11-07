@@ -1,4 +1,5 @@
 /* Utilitários sem dependência de DOM. */
+import { tr } from "./i18n.js";
 
 export function uid(prefix = "") {
   const raw = crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(16).slice(2) + Date.now().toString(16);
@@ -148,7 +149,7 @@ export function loadScript(src) {
   script.dataset.src = src;
   script._promise = new Promise((resolve, reject) => {
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Não foi possível carregar " + src));
+    script.onerror = () => reject(new Error(tr("Não foi possível carregar {src}", { src })));
   });
   document.head.appendChild(script);
   return script._promise;

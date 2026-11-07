@@ -4,7 +4,7 @@ import * as data from "../core/data.js";
 import * as store from "../core/store.js";
 import { setQuery } from "../core/router.js";
 import { STATUSES, STATUS, OPEN_STATUSES, orderTotal, isPaid, fpsGain, orderSearchText, equipmentLabel, withStatus, ageDays, isLate, hasReport, compareNumbers } from "../core/model.js";
-import { money, moneyCompact, date, dateShort, signed, plural, todayISO, toISODate } from "../core/format.js";
+import { money, moneyCompact, date, dateShort, signed, plural, todayISO, toISODate, csvDelimiter, csvMoney } from "../core/format.js";
 import { matches, downloadBlob, storageGet, storageSet } from "../core/util.js";
 import { icon } from "../ui/icons.js";
 import { openMenu } from "../ui/menu.js";
@@ -13,14 +13,15 @@ import { toast } from "../ui/toast.js";
 import { setCrumbs } from "../ui/shell.js";
 import { openNewOrder } from "../ui/new-order.js";
 import { orderActions } from "./order-actions.js";
+import { tr, trValue, locale } from "../core/i18n.js";
 
 const PAGE = 60;
 const PERIODS = [
-  { id: "", label: "Qualquer data" },
-  { id: "mes", label: "Este mês" },
-  { id: "30", label: "Últimos 30 dias" },
-  { id: "90", label: "Últimos 90 dias" },
-  { id: "ano", label: "Este ano" },
+  { id: "", label: tr("Qualquer data") },
+  { id: "mes", label: tr("Este mês") },
+  { id: "30", label: tr("Últimos 30 dias") },
+  { id: "90", label: tr("Últimos 90 dias") },
+  { id: "ano", label: tr("Este ano") },
 ];
 
 function periodStart(id) {
@@ -50,7 +51,7 @@ export function mount(el, ctx) {
 
   el.innerHTML = String(html`<div class="page page-wide" data-orders></div>`);
   const root = el.firstElementChild;
-  setCrumbs([{ label: "Ordens de serviço", href: "/ordens" }]);
+  setCrumbs([{ label: tr("Ordens de serviço"), href: "/ordens" }]);
 
   function filtered(s, all) {
     const start = periodStart(s.period);
@@ -70,7 +71,7 @@ export function mount(el, ctx) {
     const dir = s.dir === "asc" ? 1 : -1;
     const by = {
       number: (a, b) => compareNumbers(a.number, b.number) || String(a.createdAt).localeCompare(String(b.createdAt)),
-      client: (a, b) => (a.client?.name || "").localeCompare(b.client?.name || "", "pt-BR"),
+      client: (a, b) => (a.client?.name || "").localeCompare(b.client?.name || "", locale()),
       status: (a, b) => STATUSES.findIndex((x) => x.id === a.status) - STATUSES.findIndex((x) => x.id === b.status),
       receivedAt: (a, b) => String(a.receivedAt || "").localeCompare(String(b.receivedAt || "")),
       total: (a, b) => orderTotal(a) - orderTotal(b),
@@ -87,14 +88,14 @@ export function mount(el, ctx) {
 
   function statusButton(o) {
     const st = STATUS[o.status];
-    return html`<button type="button" class="status" data-status="${o.status}" data-action="status" data-id="${o.id}" aria-label="Status: ${st.label}. Mudar status">
+    return html`<button type="button" class="status" data-status="${o.status}" data-action="status" data-id="${o.id}" aria-label="${tr("Status: {s}. Mudar status", { s: st.label })}">
       ${icon(st.icon, { size: 14 })}${st.label}${icon("chevronDown", { size: 12, className: "caret" })}
     </button>`;
   }
 
   function payBadge(o) {
     if (!orderTotal(o)) return html`<span class="subtle">—</span>`;
-    return isPaid(o) ? html`<span class="badge badge-success">${icon("check", { size: 12 })}Pago</span>` : html`<span class="badge badge-warning">Pendente</span>`;
+    return isPaid(o) ? html`<span class="badge badge-success">${icon("check", { size: 12 })}${tr("Pago")}</span>` : html`<span class="badge badge-warning">${tr("Pendente")}</span>`;
   }
 
   function tableView(s, list) {
@@ -105,15 +106,15 @@ export function mount(el, ctx) {
         <table class="table orders-table">
           <thead>
             <tr>
-              <th class="w-check"><label class="check"><input type="checkbox" data-action="select-all" aria-label="Selecionar todas" ${allChecked ? "checked" : ""} /></label></th>
-              ${th(s, "number", "OS", "w-os")}
-              ${th(s, "client", "Cliente e equipamento")}
+              <th class="w-check"><label class="check"><input type="checkbox" data-action="select-all" aria-label="${tr("Selecionar todas")}" ${allChecked ? "checked" : ""} /></label></th>
+              ${th(s, "number", tr("OS"), "w-os")}
+              ${th(s, "client", tr("Cliente e equipamento"))}
               ${th(s, "status", "Status")}
-              ${th(s, "receivedAt", "Entrada", "hide-sm")}
+              ${th(s, "receivedAt", tr("Entrada"), "hide-sm")}
               <th class="hide-md">FPS 0.20</th>
-              ${th(s, "total", "Valor", "num")}
-              <th class="hide-sm">Pagamento</th>
-              <th class="w-actions"><span class="sr-only">Ações</span></th>
+              ${th(s, "total", tr("Valor"), "num")}
+              <th class="hide-sm">${tr("Pagamento")}</th>
+              <th class="w-actions"><span class="sr-only">${tr("Ações")}</span></th>
             </tr>
           </thead>
           <tbody>
@@ -121,28 +122,28 @@ export function mount(el, ctx) {
               const gain = fpsGain(o);
               const late = isLate(o);
               return html`<tr class="clickable${selected.has(o.id) ? " selected" : ""}" data-key="${o.id}" data-open="${o.id}">
-                <td class="w-check"><label class="check" data-stop><input type="checkbox" data-action="select" data-id="${o.id}" aria-label="Selecionar OS ${o.number}" ${selected.has(o.id) ? "checked" : ""} /></label></td>
+                <td class="w-check"><label class="check" data-stop><input type="checkbox" data-action="select" data-id="${o.id}" aria-label="${tr("Selecionar OS {n}", { n: o.number })}" ${selected.has(o.id) ? "checked" : ""} /></label></td>
                 <td class="w-os"><a class="os-number" href="/ordens/${o.id}">${o.number || "—"}</a></td>
                 <td>
                   <div class="cell-main">
-                    <strong class="truncate">${o.client?.name || "Sem cliente"}</strong>
-                    <small class="truncate">${equipmentLabel(o.equipment) || o.equipment?.type || "Equipamento não informado"}${o.problem ? html` · ${o.problem}` : ""}</small>
+                    <strong class="truncate">${o.client?.name || tr("Sem cliente")}</strong>
+                    <small class="truncate">${equipmentLabel(o.equipment) || trValue(o.equipment?.type) || tr("Equipamento não informado")}${o.problem ? html` · ${o.problem}` : ""}</small>
                   </div>
                 </td>
-                <td data-stop>${statusButton(o)}${late ? html` <span class="badge badge-danger" title="Previsão de entrega vencida">Atrasada</span>` : ""}</td>
+                <td data-stop>${statusButton(o)}${late ? html` <span class="badge badge-danger" title="${tr("Previsão de entrega vencida")}">${tr("Atrasada")}</span>` : ""}</td>
                 <td class="hide-sm nowrap"><span title="${date(o.receivedAt)}">${dateShort(o.receivedAt)}</span></td>
                 <td class="hide-md nowrap tnum">${o.fps?.before?.g20 != null || o.fps?.after?.g20 != null
                   ? html`<span class="muted">${o.fps.before.g20 ?? "—"}</span> ${icon("arrowRight", { size: 12, className: "inline-icon" })} <strong>${o.fps.after.g20 ?? "—"}</strong>${gain != null ? html` <span class="${gain >= 0 ? "success-text" : "danger-text"} small">${signed(gain)}</span>` : ""}`
                   : html`<span class="subtle">—</span>`}</td>
                 <td class="num">${orderTotal(o) ? money(orderTotal(o)) : html`<span class="subtle">—</span>`}</td>
                 <td class="hide-sm">${payBadge(o)}</td>
-                <td class="w-actions" data-stop><button type="button" class="btn btn-ghost btn-icon btn-sm" data-action="row-menu" data-id="${o.id}" aria-label="Mais ações da OS ${o.number}">${icon("more", { size: 16 })}</button></td>
+                <td class="w-actions" data-stop><button type="button" class="btn btn-ghost btn-icon btn-sm" data-action="row-menu" data-id="${o.id}" aria-label="${tr("Mais ações da OS {n}", { n: o.number })}">${icon("more", { size: 16 })}</button></td>
               </tr>`;
             })}
           </tbody>
         </table>
       </div>
-      ${list.length > limit ? html`<div class="load-more"><button type="button" class="btn btn-secondary" data-action="more">Mostrar mais ${Math.min(PAGE, list.length - limit)} de ${list.length - limit}</button></div>` : ""}
+      ${list.length > limit ? html`<div class="load-more"><button type="button" class="btn btn-secondary" data-action="more">${tr("Mostrar mais {count} de {rest}", { count: Math.min(PAGE, list.length - limit), rest: list.length - limit })}</button></div>` : ""}
     `;
   }
 
@@ -168,25 +169,25 @@ export function mount(el, ctx) {
             ${shown.map((o) => {
               const age = ageDays(o);
               const late = isLate(o);
-              return html`<article class="kcard${late ? " late" : ""}" data-key="${o.id}" data-id="${o.id}" data-open="${o.id}" tabindex="0" aria-label="OS ${o.number} de ${o.client?.name || "cliente"}">
+              return html`<article class="kcard${late ? " late" : ""}" data-key="${o.id}" data-id="${o.id}" data-open="${o.id}" tabindex="0" aria-label="${tr("OS {n} de {client}", { n: o.number, client: o.client?.name || tr("cliente") })}">
                 <div class="kcard-top">
                   <span class="os-number">${o.number || "—"}</span>
-                  ${age != null && st.id !== "entregue" ? html`<span class="kcard-age${age > 14 ? " old" : ""}" title="Entrada em ${date(o.receivedAt)}">${age === 0 ? "hoje" : `${age}d`}</span>` : ""}
-                  <button type="button" class="btn btn-ghost btn-icon btn-xs kcard-menu" data-action="row-menu" data-id="${o.id}" aria-label="Ações da OS ${o.number}">${icon("more", { size: 15 })}</button>
+                  ${age != null && st.id !== "entregue" ? html`<span class="kcard-age${age > 14 ? " old" : ""}" title="${tr("Entrada em {date}", { date: date(o.receivedAt) })}">${age === 0 ? tr("hoje") : `${age}d`}</span>` : ""}
+                  <button type="button" class="btn btn-ghost btn-icon btn-xs kcard-menu" data-action="row-menu" data-id="${o.id}" aria-label="${tr("Ações da OS {n}", { n: o.number })}">${icon("more", { size: 15 })}</button>
                 </div>
-                <strong class="kcard-client">${o.client?.name || "Sem cliente"}</strong>
-                <span class="kcard-equip">${equipmentLabel(o.equipment) || o.equipment?.type || "Equipamento não informado"}</span>
+                <strong class="kcard-client">${o.client?.name || tr("Sem cliente")}</strong>
+                <span class="kcard-equip">${equipmentLabel(o.equipment) || trValue(o.equipment?.type) || tr("Equipamento não informado")}</span>
                 ${o.problem ? html`<p class="kcard-problem">${o.problem}</p>` : ""}
                 <div class="kcard-foot">
                   ${orderTotal(o) ? html`<span class="kcard-value tnum">${money(orderTotal(o))}</span>` : ""}
-                  ${orderTotal(o) ? (isPaid(o) ? html`<span class="badge badge-success">Pago</span>` : html`<span class="badge badge-warning">Pendente</span>`) : ""}
-                  ${late ? html`<span class="badge badge-danger">Atrasada</span>` : ""}
-                  ${hasReport(o) ? html`<span class="kcard-icon" title="Tem relatório técnico">${icon("fileText", { size: 14 })}</span>` : ""}
+                  ${orderTotal(o) ? (isPaid(o) ? html`<span class="badge badge-success">${tr("Pago")}</span>` : html`<span class="badge badge-warning">${tr("Pendente")}</span>`) : ""}
+                  ${late ? html`<span class="badge badge-danger">${tr("Atrasada")}</span>` : ""}
+                  ${hasReport(o) ? html`<span class="kcard-icon" title="${tr("Tem relatório técnico")}">${icon("fileText", { size: 14 })}</span>` : ""}
                 </div>
               </article>`;
             })}
-            ${!items.length ? html`<div class="kcol-empty">Solte uma OS aqui</div>` : ""}
-            ${items.length > shown.length ? html`<a class="kcol-more" href="/ordens?status=entregue&view=table">Ver todas as ${items.length} entregues</a>` : ""}
+            ${!items.length ? html`<div class="kcol-empty">${tr("Solte uma OS aqui")}</div>` : ""}
+            ${items.length > shown.length ? html`<a class="kcol-more" href="/ordens?status=entregue&view=table">${tr("Ver todas as {n} entregues", { n: items.length })}</a>` : ""}
           </div>
         </section>`;
       })}
@@ -210,12 +211,12 @@ export function mount(el, ctx) {
       html`
         <header class="page-head">
           <div class="page-head-main">
-            <h1 class="page-title">Ordens de serviço</h1>
-            <p class="page-desc">${all.length ? html`${plural(all.filter((o) => OPEN_STATUSES.includes(o.status)).length, "em aberto", "em aberto")} · ${money(openTotal)} em serviços abertos · ${money(receivable)} a receber` : "Cada equipamento que entra na oficina vira uma OS."}</p>
+            <h1 class="page-title">${tr("Ordens de serviço")}</h1>
+            <p class="page-desc">${all.length ? html`${plural(all.filter((o) => OPEN_STATUSES.includes(o.status)).length, tr("em aberto"), tr("em aberto"))} · ${tr("{v} em serviços abertos", { v: money(openTotal) })} · ${tr("{v} a receber", { v: money(receivable) })}` : tr("Cada equipamento que entra na oficina vira uma OS.")}</p>
           </div>
           <div class="page-actions">
-            <button type="button" class="btn btn-secondary" data-action="export" aria-haspopup="menu">${icon("download", { size: 16 })}Exportar</button>
-            <button type="button" class="btn btn-primary" data-action="new">${icon("plus", { size: 16 })}Nova OS</button>
+            <button type="button" class="btn btn-secondary" data-action="export" aria-haspopup="menu">${icon("download", { size: 16 })}${tr("Exportar")}</button>
+            <button type="button" class="btn btn-primary" data-action="new">${icon("plus", { size: 16 })}${tr("Nova OS")}</button>
           </div>
         </header>
 
@@ -224,33 +225,33 @@ export function mount(el, ctx) {
               <div class="toolbar">
                 <div class="input-wrap search">
                   ${icon("search", { size: 15 })}
-                  <input class="input" type="search" placeholder="Buscar OS, cliente, modelo, problema…" value="${s.search}" data-search aria-label="Buscar ordens" />
+                  <input class="input" type="search" placeholder="${tr("Buscar OS, cliente, modelo, problema…")}" value="${s.search}" data-search aria-label="${tr("Buscar ordens")}" />
                 </div>
-                <div class="segmented" role="group" aria-label="Visualização">
-                  <button type="button" data-view="table" aria-pressed="${s.view !== "board" ? "true" : "false"}">${icon("list", { size: 15 })}Lista</button>
-                  <button type="button" data-view="board" aria-pressed="${s.view === "board" ? "true" : "false"}">${icon("columns", { size: 15 })}Quadro</button>
+                <div class="segmented" role="group" aria-label="${tr("Visualização")}">
+                  <button type="button" data-view="table" aria-pressed="${s.view !== "board" ? "true" : "false"}">${icon("list", { size: 15 })}${tr("Lista")}</button>
+                  <button type="button" data-view="board" aria-pressed="${s.view === "board" ? "true" : "false"}">${icon("columns", { size: 15 })}${tr("Quadro")}</button>
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm${s.pay ? " is-on" : ""}" data-action="pay" aria-haspopup="menu">${icon("wallet", { size: 15 })}${s.pay === "pago" ? "Pagas" : s.pay === "pendente" ? "A receber" : "Pagamento"}${icon("chevronDown", { size: 13 })}</button>
-                <button type="button" class="btn btn-secondary btn-sm${s.period ? " is-on" : ""}" data-action="period" aria-haspopup="menu">${icon("calendar", { size: 15 })}${s.period ? periodLabel : "Período"}${icon("chevronDown", { size: 13 })}</button>
-                <label class="check small"><input type="checkbox" data-action="report-filter" ${s.report ? "checked" : ""} />Com relatório</label>
-                ${filtersOn ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="clear">${icon("x", { size: 14 })}Limpar filtros</button>` : ""}
+                <button type="button" class="btn btn-secondary btn-sm${s.pay ? " is-on" : ""}" data-action="pay" aria-haspopup="menu">${icon("wallet", { size: 15 })}${s.pay === "pago" ? tr("Pagas") : s.pay === "pendente" ? tr("A receber") : tr("Pagamento")}${icon("chevronDown", { size: 13 })}</button>
+                <button type="button" class="btn btn-secondary btn-sm${s.period ? " is-on" : ""}" data-action="period" aria-haspopup="menu">${icon("calendar", { size: 15 })}${s.period ? periodLabel : tr("Período")}${icon("chevronDown", { size: 13 })}</button>
+                <label class="check small"><input type="checkbox" data-action="report-filter" ${s.report ? "checked" : ""} />${tr("Com relatório")}</label>
+                ${filtersOn ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="clear">${icon("x", { size: 14 })}${tr("Limpar filtros")}</button>` : ""}
               </div>
               ${s.view !== "board"
-                ? html`<div class="chips status-chips" role="group" aria-label="Filtrar por status">
-                    <button type="button" class="chip" data-status-filter="" aria-pressed="${!s.status ? "true" : "false"}">Todas <span class="count">${Object.values(counts).reduce((a, b) => a + b, 0)}</span></button>
-                    <button type="button" class="chip" data-status-filter="abertas" aria-pressed="${s.status === "abertas" ? "true" : "false"}">Em aberto <span class="count">${OPEN_STATUSES.reduce((a, k) => a + counts[k], 0)}</span></button>
+                ? html`<div class="chips status-chips" role="group" aria-label="${tr("Filtrar por status")}">
+                    <button type="button" class="chip" data-status-filter="" aria-pressed="${!s.status ? "true" : "false"}">${tr("Todas")} <span class="count">${Object.values(counts).reduce((a, b) => a + b, 0)}</span></button>
+                    <button type="button" class="chip" data-status-filter="abertas" aria-pressed="${s.status === "abertas" ? "true" : "false"}">${tr("Em aberto")} <span class="count">${OPEN_STATUSES.reduce((a, k) => a + counts[k], 0)}</span></button>
                     ${STATUSES.map((st) => html`<button type="button" class="chip" data-status-filter="${st.id}" aria-pressed="${s.status === st.id ? "true" : "false"}"><span class="dot dot-${st.id}"></span>${st.label} <span class="count">${counts[st.id]}</span></button>`)}
                   </div>`
                 : ""}
               ${selected.size && s.view !== "board"
-                ? html`<div class="bulkbar" role="region" aria-label="Ações em massa">
-                    <strong>${plural(selected.size, "selecionada", "selecionadas")}</strong>
-                    <button type="button" class="btn btn-secondary btn-sm" data-action="bulk-status" aria-haspopup="menu">${icon("refresh", { size: 14 })}Mudar status</button>
-                    <button type="button" class="btn btn-secondary btn-sm" data-action="bulk-paid">${icon("check", { size: 14 })}Marcar como pagas</button>
+                ? html`<div class="bulkbar" role="region" aria-label="${tr("Ações em massa")}">
+                    <strong>${plural(selected.size, tr("selecionada"), tr("selecionadas"))}</strong>
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="bulk-status" aria-haspopup="menu">${icon("refresh", { size: 14 })}${tr("Mudar status")}</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="bulk-paid">${icon("check", { size: 14 })}${tr("Marcar como pagas")}</button>
                     <button type="button" class="btn btn-secondary btn-sm" data-action="bulk-csv">${icon("download", { size: 14 })}CSV</button>
-                    <button type="button" class="btn btn-danger-ghost btn-sm" data-action="bulk-delete">${icon("trash", { size: 14 })}Excluir</button>
+                    <button type="button" class="btn btn-danger-ghost btn-sm" data-action="bulk-delete">${icon("trash", { size: 14 })}${tr("Excluir")}</button>
                     <span class="spacer"></span>
-                    <button type="button" class="btn btn-ghost btn-sm" data-action="bulk-clear">Cancelar</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-action="bulk-clear">${tr("Cancelar")}</button>
                   </div>`
                 : ""}
               ${list.length
@@ -259,16 +260,16 @@ export function mount(el, ctx) {
                   : tableView(s, list)
                 : html`<div class="card"><div class="empty">
                     <div class="empty-icon">${icon("search", { size: 20 })}</div>
-                    <h3>Nenhuma OS encontrada</h3>
-                    <p>Nada combina com a busca e os filtros atuais.</p>
-                    <div class="btn-group"><button type="button" class="btn btn-secondary" data-action="clear">Limpar filtros</button></div>
+                    <h3>${tr("Nenhuma OS encontrada")}</h3>
+                    <p>${tr("Nada combina com a busca e os filtros atuais.")}</p>
+                    <div class="btn-group"><button type="button" class="btn btn-secondary" data-action="clear">${tr("Limpar filtros")}</button></div>
                   </div></div>`}
             `
           : html`<div class="card"><div class="empty">
               <div class="empty-icon">${icon("orders", { size: 20 })}</div>
-              <h3>Nenhuma ordem de serviço ainda</h3>
-              <p>Registre a entrada de um equipamento para acompanhar a manutenção, gerar o relatório técnico e cobrar o serviço.</p>
-              <div class="btn-group"><button type="button" class="btn btn-primary" data-action="new">${icon("plus", { size: 16 })}Criar primeira OS</button></div>
+              <h3>${tr("Nenhuma ordem de serviço ainda")}</h3>
+              <p>${tr("Registre a entrada de um equipamento para acompanhar a manutenção, gerar o relatório técnico e cobrar o serviço.")}</p>
+              <div class="btn-group"><button type="button" class="btn btn-primary" data-action="new">${icon("plus", { size: 16 })}${tr("Criar primeira OS")}</button></div>
             </div></div>`}
       `
     );
@@ -279,8 +280,8 @@ export function mount(el, ctx) {
     const o = data.order(id);
     if (!o || o.status === status) return;
     data.saveOrder(withStatus(o, status));
-    toast.success(`OS ${o.number} → ${STATUS[status].label}`, {
-      action: { label: "Desfazer", run: () => data.saveOrder(withStatus(data.order(id), o.status)) },
+    toast.success(tr("OS {n} → {s}", { n: o.number, s: STATUS[status].label }), {
+      action: { label: tr("Desfazer"), run: () => data.saveOrder(withStatus(data.order(id), o.status)) },
     });
   }
 
@@ -289,12 +290,12 @@ export function mount(el, ctx) {
     openMenu(
       trigger,
       STATUSES.map((st) => ({ label: st.label, dot: st.id, checked: undefined, hint: st.hint, run: () => setStatus(id, st.id), disabled: st.id === o.status })),
-      { label: "Mudar status", minWidth: 230 }
+      { label: tr("Mudar status"), minWidth: 230 }
     );
   }
 
-  function exportCsv(list, name = "ordens-de-servico") {
-    const head = ["OS", "Status", "Entrada", "Previsão", "Entrega", "Cliente", "Telefone", "Tipo", "Modelo", "Fabricante", "Problema", "Serviços", "Valor", "Pagamento", "Forma", "FPS antes 0.20", "FPS depois 0.20", "FPS antes 0.28", "FPS depois 0.28", "FPS antes 0.32", "FPS depois 0.32"];
+  function exportCsv(list, name = tr("ordens-de-servico")) {
+    const head = [tr("OS"), "Status", tr("Entrada"), tr("Previsão"), tr("Entrega"), tr("Cliente"), tr("Telefone"), tr("Tipo"), tr("Modelo"), tr("Fabricante"), tr("Problema"), tr("Serviços"), tr("Valor"), tr("Pagamento"), tr("Forma"), tr("FPS antes 0.20"), tr("FPS depois 0.20"), tr("FPS antes 0.28"), tr("FPS depois 0.28"), tr("FPS antes 0.32"), tr("FPS depois 0.32")];
     const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const rows = list.map((o) => [
       o.number,
@@ -304,14 +305,14 @@ export function mount(el, ctx) {
       date(o.deliveredAt, ""),
       o.client?.name,
       o.client?.phone,
-      o.equipment?.type,
+      trValue(o.equipment?.type),
       o.equipment?.model,
       o.equipment?.brand,
       o.problem,
       (o.items || []).map((i) => `${i.qty > 1 ? i.qty + "x " : ""}${i.description}`).join("; "),
-      (orderTotal(o) / 100).toFixed(2).replace(".", ","),
-      isPaid(o) ? "Pago" : "Pendente",
-      o.payment?.method,
+      csvMoney(orderTotal(o)),
+      isPaid(o) ? tr("Pago") : tr("Pendente"),
+      trValue(o.payment?.method),
       o.fps?.before?.g20,
       o.fps?.after?.g20,
       o.fps?.before?.g28,
@@ -319,23 +320,23 @@ export function mount(el, ctx) {
       o.fps?.before?.g32,
       o.fps?.after?.g32,
     ]);
-    const csv = "﻿" + [head, ...rows].map((r) => r.map(esc).join(";")).join("\r\n");
+    const csv = "﻿" + [head, ...rows].map((r) => r.map(esc).join(csvDelimiter())).join("\r\n");
     downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${name}_${todayISO()}.csv`);
-    toast.success("Planilha exportada", { description: `${plural(list.length, "ordem", "ordens")} em CSV (abre no Excel e no Google Planilhas).` });
+    toast.success(tr("Planilha exportada"), { description: tr("{list} em CSV (abre no Excel e no Google Planilhas).", { list: plural(list.length, tr("ordem"), tr("ordens")) }) });
   }
 
   async function exportPdf(list) {
     const { exportOrdersList } = await import("../docs/list-doc.js");
-    await exportOrdersList(list, { title: "Ordens de serviço", filters: describeFilters(state()) });
+    await exportOrdersList(list, { title: tr("Ordens de serviço"), filters: describeFilters(state()) });
   }
 
   function describeFilters(s) {
     const parts = [];
-    if (s.status === "abertas") parts.push("Em aberto");
+    if (s.status === "abertas") parts.push(tr("Em aberto"));
     else if (s.status) parts.push(STATUS[s.status]?.label);
-    if (s.pay) parts.push(s.pay === "pago" ? "Pagas" : "A receber");
+    if (s.pay) parts.push(s.pay === "pago" ? tr("Pagas") : tr("A receber"));
     if (s.period) parts.push(PERIODS.find((p) => p.id === s.period)?.label);
-    if (s.search) parts.push(`Busca: “${s.search}”`);
+    if (s.search) parts.push(tr("Busca: “{q}”", { q: s.search }));
     return parts.join(" · ");
   }
 
@@ -380,7 +381,7 @@ export function mount(el, ctx) {
       const id = btn.dataset.id;
       if (action === "new") openNewOrder();
       else if (action === "status") statusMenu(btn, id);
-      else if (action === "row-menu") openMenu(btn, orderActions(data.order(id), { onChange: paint }), { align: "end", label: "Ações da OS" });
+      else if (action === "row-menu") openMenu(btn, orderActions(data.order(id), { onChange: paint }), { align: "end", label: tr("Ações da OS") });
       else if (action === "more") {
         limit += PAGE;
         paint();
@@ -389,9 +390,9 @@ export function mount(el, ctx) {
       } else if (action === "pay") {
         const s = state();
         openMenu(btn, [
-          { label: "Todas", checked: !s.pay, run: () => setQuery({ pay: "" }) },
-          { label: "A receber", checked: s.pay === "pendente", run: () => setQuery({ pay: "pendente" }) },
-          { label: "Pagas", checked: s.pay === "pago", run: () => setQuery({ pay: "pago" }) },
+          { label: tr("Todas"), checked: !s.pay, run: () => setQuery({ pay: "" }) },
+          { label: tr("A receber"), checked: s.pay === "pendente", run: () => setQuery({ pay: "pendente" }) },
+          { label: tr("Pagas"), checked: s.pay === "pago", run: () => setQuery({ pay: "pago" }) },
         ]);
       } else if (action === "period") {
         const s = state();
@@ -401,8 +402,8 @@ export function mount(el, ctx) {
         openMenu(
           btn,
           [
-            { label: "Planilha CSV", hint: `${plural(list.length, "ordem", "ordens")} da visão atual`, icon: "table", run: () => exportCsv(list) },
-            { label: "PDF da lista", hint: "A4 paisagem, com totais", icon: "filePdf", run: () => exportPdf(list) },
+            { label: tr("Planilha CSV"), hint: tr("{list} da visão atual", { list: plural(list.length, tr("ordem"), tr("ordens")) }), icon: "table", run: () => exportCsv(list) },
+            { label: tr("PDF da lista"), hint: tr("A4 paisagem, com totais"), icon: "filePdf", run: () => exportPdf(list) },
           ],
           { align: "end", minWidth: 250 }
         );
@@ -420,7 +421,7 @@ export function mount(el, ctx) {
                 const o = data.order(sid);
                 if (o) data.saveOrder(withStatus(o, st.id));
               }
-              toast.success(`${plural(selected.size, "OS movida", "OS movidas")} para ${st.label}`);
+              toast.success(tr("{list} para {s}", { list: plural(selected.size, tr("OS movida"), tr("OS movidas")), s: st.label }));
               selected.clear();
               paint();
             },
@@ -431,14 +432,14 @@ export function mount(el, ctx) {
           const o = data.order(sid);
           if (o && !isPaid(o)) data.saveOrder({ ...o, payment: { ...o.payment, status: "pago", paidAt: o.payment?.paidAt || todayISO() } });
         }
-        toast.success(`${plural(selected.size, "OS marcada", "OS marcadas")} como paga${selected.size > 1 ? "s" : ""}`);
+        toast.success(plural(selected.size, tr("OS marcada como paga"), tr("OS marcadas como pagas")));
         selected.clear();
         paint();
       } else if (action === "bulk-csv") {
-        exportCsv(currentList().filter((o) => selected.has(o.id)), "ordens-selecionadas");
+        exportCsv(currentList().filter((o) => selected.has(o.id)), tr("ordens-selecionadas"));
       } else if (action === "bulk-delete") {
         const count = selected.size;
-        const ok = await confirm({ title: `Excluir ${plural(count, "ordem", "ordens")}?`, message: "As OS selecionadas, com relatórios e fotos, serão removidas. Um backup automático fica em dados/cloud/backups.", confirmLabel: "Excluir", danger: true });
+        const ok = await confirm({ title: tr("Excluir {list}?", { list: plural(count, tr("ordem"), tr("ordens")) }), message: tr("As OS selecionadas, com relatórios e fotos, serão removidas. Um backup automático fica em dados/cloud/backups."), confirmLabel: tr("Excluir"), danger: true });
         if (!ok) return;
         const removed = [];
         for (const sid of selected) {
@@ -446,7 +447,7 @@ export function mount(el, ctx) {
           if (doc) removed.push(doc);
         }
         selected.clear();
-        toast.success(`${plural(removed.length, "OS excluída", "OS excluídas")}`, { action: { label: "Desfazer", run: () => removed.forEach((d) => store.restore("orders", d)) } });
+        toast.success(`${plural(removed.length, tr("OS excluída"), tr("OS excluídas"))}`, { action: { label: tr("Desfazer"), run: () => removed.forEach((d) => store.restore("orders", d)) } });
       }
     }),
     on(root, "click", "[data-open]", (event, row) => {

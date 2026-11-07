@@ -6,6 +6,7 @@ import { date, parseNumber, fps as fmtFps, todayISO } from "../core/format.js";
 import { fpsGain, equipmentLabel } from "../core/model.js";
 import { safeFileName } from "../core/util.js";
 import { savePdf, printHtml } from "./pdf.js";
+import { tr } from "../core/i18n.js";
 
 const ICONS = {
   os: '<path d="M9 4h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1V5a1 1 0 0 1 1-1z"/><path d="M9 5h6v2H9z"/>',
@@ -66,14 +67,14 @@ export function reportHtml(order, { settings = data.settings(), client } = {}) {
   const afterNote = r.fpsAfterNote || fpsNote(order.fps?.after || {});
   const gainText = gain == null ? "+00" : (gain < 0 ? "−" : "+") + String(Math.round(Math.abs(gain))).padStart(2, "0");
   const ident = [
-    ["modelo", "Modelo", model],
+    ["modelo", tr("Modelo"), model],
     ["gearbox", "Gearbox", r.gearbox],
     ["nozzle", "Nozzle", r.nozzle],
     ["motor", "Motor", r.motor],
-    ["mola", "Mola", r.mola],
-    ["cilindro", "Cilindro", r.cilindro],
-    ["cano", "Cano", r.cano],
-    ["bb", "BB utilizada", r.bb],
+    ["mola", tr("Mola"), r.mola],
+    ["cilindro", tr("Cilindro"), r.cilindro],
+    ["cano", tr("Cano"), r.cano],
+    ["bb", tr("BB utilizada"), r.bb],
   ];
 
   return html`<div class="doc-page landscape auto-height rd">
@@ -82,74 +83,74 @@ export function reportHtml(order, { settings = data.settings(), client } = {}) {
         <img class="rd-logo" src="/assets/logo.png" alt="" />
         <div>
           <div class="rd-brand-name">${brandName(b.name)}</div>
-          <div class="rd-brand-sub">— ${b.subtitle || "Manutenção de airsoft"} —</div>
+          <div class="rd-brand-sub">— ${b.subtitle || tr("Manutenção de airsoft")} —</div>
           <div class="rd-brand-tag">${b.tagline || ""}</div>
         </div>
       </div>
       <div class="rd-title">
-        <h1>${settings.report.title || "Relatório técnico"}</h1>
+        <h1>${settings.report.title || tr("Relatório técnico")}</h1>
         <h2>${settings.report.subtitle || ""}</h2>
       </div>
       <div class="rd-os">
-        <div class="rd-os-row">${ic("os")}<div class="rd-os-field"><span class="rd-label">Ordem de serviço</span><div class="rd-line">${order.number || ""}</div></div></div>
-        <div class="rd-os-row">${ic("data")}<div class="rd-os-field"><span class="rd-label">Data</span><div class="rd-line">${reportDate}</div></div></div>
-        <div class="rd-os-row">${ic("cliente")}<div class="rd-os-field"><span class="rd-label">Cliente</span><div class="rd-line">${clientName}</div></div></div>
-        <div class="rd-os-row">${ic("armeiro")}<div class="rd-os-field"><span class="rd-label">Armeiro responsável</span><div class="rd-line">${technician}</div></div></div>
+        <div class="rd-os-row">${ic("os")}<div class="rd-os-field"><span class="rd-label">${tr("Ordem de serviço")}</span><div class="rd-line">${order.number || ""}</div></div></div>
+        <div class="rd-os-row">${ic("data")}<div class="rd-os-field"><span class="rd-label">${tr("Data")}</span><div class="rd-line">${reportDate}</div></div></div>
+        <div class="rd-os-row">${ic("cliente")}<div class="rd-os-field"><span class="rd-label">${tr("Cliente")}</span><div class="rd-line">${clientName}</div></div></div>
+        <div class="rd-os-row">${ic("armeiro")}<div class="rd-os-field"><span class="rd-label">${tr("Armeiro responsável")}</span><div class="rd-line">${technician}</div></div></div>
       </div>
     </header>
 
     <section class="rd-panel rd-ident">${corners}
-      <div class="rd-head"><span class="num">1.</span> Identificação do equipamento</div>
+      <div class="rd-head"><span class="num">1.</span> ${tr("Identificação do equipamento")}</div>
       <div class="rd-ident-rows">
         ${ident.map(([key, label, value]) => html`<div class="rd-ident-row">${ic(key)}<span class="rd-ident-label">${label}</span><span class="rd-value">${value || ""}</span></div>`)}
       </div>
     </section>
 
     <section class="rd-panel rd-perf">${corners}
-      <div class="rd-head"><span class="num">2.</span> Desempenho</div>
+      <div class="rd-head"><span class="num">2.</span> ${tr("Desempenho")}</div>
       <div class="rd-perf-grid">
         <div class="rd-card">
-          <div class="rd-card-title">FPS antes</div>
+          <div class="rd-card-title">${tr("FPS antes")}</div>
           <div class="rd-fps-box">${before ?? ""}</div>
           <div class="rd-unit">@ 0.20g</div>
           <div class="rd-foot">${beforeNote}</div>
         </div>
         <div class="rd-card highlight">
-          <div class="rd-card-title">FPS depois</div>
+          <div class="rd-card-title">${tr("FPS depois")}</div>
           <div class="rd-fps-box">${after ?? ""}</div>
           <div class="rd-unit">@ 0.20g</div>
           <div class="rd-foot">${afterNote}</div>
         </div>
         <div class="rd-card">
-          <div class="rd-card-title">Ganho de performance</div>
+          <div class="rd-card-title">${tr("Ganho de performance")}</div>
           <div class="rd-gain">${gainText} <small>FPS</small></div>
           <div class="rd-foot">${r.gainNote || ""}</div>
         </div>
       </div>
-      <div class="rd-obs">${ic("obs")}<div class="rd-obs-body"><div class="rd-obs-label">Observação:</div><div class="rd-text">${r.observation || ""}</div></div></div>
+      <div class="rd-obs">${ic("obs")}<div class="rd-obs-body"><div class="rd-obs-label">${tr("Observação:")}</div><div class="rd-text">${r.observation || ""}</div></div></div>
     </section>
 
     <section class="rd-panel rd-diag">${corners}
-      <div class="rd-head"><span class="num">3.</span> Diagnóstico inicial</div>
+      <div class="rd-head"><span class="num">3.</span> ${tr("Diagnóstico inicial")}</div>
       <div class="rd-list">${padded(r.diagnosis, 4).map((line) => html`<div class="rd-list-row"><span class="rd-bullet">►</span><div class="rd-box">${line}</div></div>`)}</div>
     </section>
 
     <section class="rd-panel rd-serv">${corners}
-      <div class="rd-head"><span class="num">4.</span> Serviços realizados</div>
+      <div class="rd-head"><span class="num">4.</span> ${tr("Serviços realizados")}</div>
       <div class="rd-list">${padded(r.services, 4).map((line) => html`<div class="rd-list-row"><span class="rd-bullet check">✓</span><div class="rd-box">${line}</div></div>`)}</div>
     </section>
 
     <section class="rd-panel rd-photos">${corners}
-      <div class="rd-head"><span class="num">5.</span> Registro fotográfico <em>– componentes originais (antes da manutenção)</em></div>
+      <div class="rd-head"><span class="num">5.</span> ${tr("Registro fotográfico")} <em>${tr("– componentes originais (antes da manutenção)")}</em></div>
       <div class="rd-photo-grid" data-count="${photos.length || 1}">
         ${photos.length
           ? photos.map((id) => html`<div class="rd-photo" style="background-image:url('${fileUrl(id)}')"></div>`)
-          : html`<div class="rd-photo empty">${ic("camera")}<span>Sem fotos</span></div>`}
+          : html`<div class="rd-photo empty">${ic("camera")}<span>${tr("Sem fotos")}</span></div>`}
       </div>
     </section>
 
     <section class="rd-panel rd-parecer">${corners}
-      <div class="rd-head"><span class="num">6.</span> Parecer técnico</div>
+      <div class="rd-head"><span class="num">6.</span> ${tr("Parecer técnico")}</div>
       <div class="rd-text">${r.opinion || ""}</div>
     </section>
 
@@ -159,7 +160,7 @@ export function reportHtml(order, { settings = data.settings(), client } = {}) {
 
 export function reportFileName(order) {
   const os = safeFileName(order.number, "");
-  return os ? `OS-${os}_relatorio-tecnico_${todayISO()}.pdf` : `relatorio-tecnico_${todayISO()}.pdf`;
+  return os ? `${tr("OS")}-${os}_${tr("relatorio-tecnico")}_${todayISO()}.pdf` : `${tr("relatorio-tecnico")}_${todayISO()}.pdf`;
 }
 
 export async function exportReport(order, mode = "pdf") {
@@ -168,5 +169,5 @@ export async function exportReport(order, mode = "pdf") {
     await printHtml(doc, { orientation: "landscape", title: reportFileName(order).replace(/\.pdf$/, ""), fit: true });
     return;
   }
-  await savePdf(doc, { filename: reportFileName(order), orientation: "landscape", background: "#070b15", fitHeight: true, title: `Relatório técnico — OS ${order.number || ""}` });
+  await savePdf(doc, { filename: reportFileName(order), orientation: "landscape", background: "#070b15", fitHeight: true, title: tr("Relatório técnico — OS {n}", { n: order.number || "" }) });
 }

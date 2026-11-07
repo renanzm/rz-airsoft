@@ -5,34 +5,53 @@ import { phone as fmtPhone, todayISO } from "../core/format.js";
 import { downloadBlob, loadScript, sleep } from "../core/util.js";
 import { toast } from "../ui/toast.js";
 import { stage } from "./pdf.js";
+import { tr, localizeDefault } from "../core/i18n.js";
 
 export const DEFAULT_BANNER = {
-  eyebrow: "Serviço especializado",
-  headline: "Serviço técnico\npara sua",
+  eyebrow: tr("Serviço especializado"),
+  headline: tr("Serviço técnico\npara sua"),
   highlight: "AEG",
   services: [
-    { title: "Revisão completa", copy: "Sistema interno e externo • Hop-up e cano" },
-    { title: "Troca de peças", copy: "Motor, Bucking, Air Nozzle, Nub, Engrenagens, Contato de Gatilho, Fiação e Mais" },
-    { title: "Consultoria", copy: "Sobre peças internas e externas, upgrades. Loadout, Fones, Coletes e Importação" },
-    { title: "Manutenção em AEG", copy: "Revisão, Limpeza e Correção de Problemas" },
-    { title: "Carregadores GBB", copy: "Troca de O-rings" },
+    { title: tr("Revisão completa"), copy: tr("Sistema interno e externo • Hop-up e cano") },
+    { title: tr("Troca de peças"), copy: tr("Motor, Bucking, Air Nozzle, Nub, Engrenagens, Contato de Gatilho, Fiação e Mais") },
+    { title: tr("Consultoria"), copy: tr("Sobre peças internas e externas, upgrades. Loadout, Fones, Coletes e Importação") },
+    { title: tr("Manutenção em AEG"), copy: tr("Revisão, Limpeza e Correção de Problemas") },
+    { title: tr("Carregadores GBB"), copy: tr("Troca de O-rings") },
   ],
   connectors: true,
+  connectorTitle: tr("Troca de conectores"),
+  connectorCopy: tr("Principais modelos do mercado"),
+  cta: tr("Solicite seu orçamento"),
+  phone: "",
+  handle: "",
+  footer: tr("RZ Airsoft / Manutenção com precisão e compromisso"),
+};
+
+/* Textos padrão do banner em português: acompanham o idioma enquanto ninguém os editar. */
+export const BANNER_TEXTS = {
+  eyebrow: "Serviço especializado",
+  headline: "Serviço técnico\npara sua",
   connectorTitle: "Troca de conectores",
   connectorCopy: "Principais modelos do mercado",
   cta: "Solicite seu orçamento",
-  phone: "",
-  handle: "",
   footer: "RZ Airsoft / Manutenção com precisão e compromisso",
 };
+export const BANNER_SERVICES = [
+  ["Revisão completa", "Sistema interno e externo • Hop-up e cano"],
+  ["Troca de peças", "Motor, Bucking, Air Nozzle, Nub, Engrenagens, Contato de Gatilho, Fiação e Mais"],
+  ["Consultoria", "Sobre peças internas e externas, upgrades. Loadout, Fones, Coletes e Importação"],
+  ["Manutenção em AEG", "Revisão, Limpeza e Correção de Problemas"],
+  ["Carregadores GBB", "Troca de O-rings"],
+];
 
 export function bannerConfig() {
   const s = data.settings();
   const saved = s.marketing?.banner || {};
+  const services = Array.isArray(saved.services) && saved.services.length ? saved.services : DEFAULT_BANNER.services;
   return {
     ...DEFAULT_BANNER,
-    ...saved,
-    services: Array.isArray(saved.services) && saved.services.length ? saved.services : DEFAULT_BANNER.services,
+    ...Object.fromEntries(Object.entries(saved).map(([key, value]) => [key, key in BANNER_TEXTS ? localizeDefault(value, BANNER_TEXTS[key]) : value])),
+    services: services.map((svc, i) => ({ ...svc, title: localizeDefault(svc.title, BANNER_SERVICES[i]?.[0] ?? []), copy: localizeDefault(svc.copy, BANNER_SERVICES[i]?.[1] ?? []) })),
     phone: saved.phone || s.business.phone || "",
     handle: saved.handle ?? s.business.instagram ?? "",
   };
@@ -66,7 +85,7 @@ export function bannerHtml(config = bannerConfig(), { mark = darkMark } = {}) {
     <span class="bn-side">AIRSOFT / SERVICE / RZ</span>
     <header class="bn-top">
       <img class="bn-logo" src="/assets/logo.png" alt="" />
-      <div class="bn-meta"><div class="bn-kicker">${s.business.subtitle || "Manutenção de airsoft"}</div><div class="bn-signature">${s.business.tagline || ""}</div></div>
+      <div class="bn-meta"><div class="bn-kicker">${s.business.subtitle || tr("Manutenção de airsoft")}</div><div class="bn-signature">${s.business.tagline || ""}</div></div>
     </header>
     <section class="bn-hero">
       <span class="bn-hero-code">RZ / 01</span>
@@ -74,14 +93,14 @@ export function bannerHtml(config = bannerConfig(), { mark = darkMark } = {}) {
       <h1>${lines.map((line, i) => html`${i ? html`<br />` : ""}${line}`)}${config.highlight ? html` <span>${config.highlight}</span>` : ""}</h1>
     </section>
     <section class="bn-services">
-      <div class="bn-label">Serviços</div>
+      <div class="bn-label">${tr("Serviços")}</div>
       <div class="bn-cards">
         ${config.services.slice(0, 5).map((svc, i) => html`<article class="bn-card${i === 0 ? " featured" : ""}"><div class="bn-num">${String(i + 1).padStart(2, "0")}</div><h2>${svc.title}</h2><p>${svc.copy}</p></article>`)}
       </div>
     </section>
     ${config.connectors
       ? html`<section class="bn-connector">
-          <div class="bn-connector-copy"><div class="bn-connector-index">CONEXÃO</div><h2>${config.connectorTitle}</h2><p>${config.connectorCopy}</p></div>
+          <div class="bn-connector-copy"><div class="bn-connector-index">${tr("CONEXÃO")}</div><h2>${config.connectorTitle}</h2><p>${config.connectorCopy}</p></div>
           <div class="bn-types">
             <div class="bn-type"><img src="/assets/connector-xt60.svg" alt="" /><span>XT60</span></div>
             <div class="bn-type"><img src="/assets/connector-tdeans.svg" alt="" /><span>T-DEANS</span></div>
@@ -124,13 +143,13 @@ async function renderCanvas(scale) {
 }
 
 export async function exportBanner(kind = "pdf") {
-  const progress = toast.loading(kind === "png" ? "Gerando imagem…" : "Gerando PDF do banner…");
+  const progress = toast.loading(kind === "png" ? tr("Gerando imagem…") : tr("Gerando PDF do banner…"));
   try {
     if (kind === "png") {
       const canvas = await renderCanvas(1);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
       downloadBlob(blob, `banner-rz-airsoft_${todayISO()}.png`);
-      progress.update("Imagem baixada", "success", "1080 × 1350 px, pronta para o Instagram");
+      progress.update(tr("Imagem baixada"), "success", tr("1080 × 1350 px, pronta para o Instagram"));
       return;
     }
     await loadScript("/vendor/jspdf.umd.min.js");
@@ -139,10 +158,10 @@ export async function exportBanner(kind = "pdf") {
     pdf.setProperties({ title: "Banner RZ Airsoft", author: "RZ Airsoft" });
     pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, 200, 250, undefined, "FAST");
     downloadBlob(pdf.output("blob"), `banner-rz-airsoft_${todayISO()}.pdf`);
-    progress.update("PDF do banner baixado", "success", "200 × 250 mm (4:5)");
+    progress.update(tr("PDF do banner baixado"), "success", "200 × 250 mm (4:5)");
   } catch (error) {
     console.error(error);
-    progress.update("Não foi possível gerar o banner", "error", error?.message || "");
+    progress.update(tr("Não foi possível gerar o banner"), "error", error?.message || "");
   }
 }
 

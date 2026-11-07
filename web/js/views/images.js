@@ -1,4 +1,5 @@
 /* Prepara fotos para envio: corrige a orientação, reduz e comprime em JPEG. */
+import { tr } from "../core/i18n.js";
 const MAX_SIDE = 1600;
 const QUALITY = 0.84;
 
@@ -27,7 +28,7 @@ export async function prepareImage(file) {
   try {
     source = await decode(file);
   } catch {
-    throw new Error("Formato de imagem não suportado pelo navegador (tente JPG ou PNG).");
+    throw new Error(tr("Formato de imagem não suportado pelo navegador (tente JPG ou PNG)."));
   }
   const width = source.width || source.naturalWidth;
   const height = source.height || source.naturalHeight;
@@ -44,14 +45,14 @@ export async function prepareImage(file) {
   ctx.drawImage(source, 0, 0, w, h);
   source.close?.();
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", QUALITY));
-  if (!blob) throw new Error("Não foi possível processar a imagem.");
+  if (!blob) throw new Error(tr("Não foi possível processar a imagem."));
   return blob;
 }
 
 /** data:image/... (relatórios antigos) → Blob, para migrar as fotos. */
 export function dataUrlToBlob(dataUrl) {
   const match = /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(String(dataUrl || ""));
-  if (!match) throw new Error("Foto antiga em formato desconhecido.");
+  if (!match) throw new Error(tr("Foto antiga em formato desconhecido."));
   const type = match[1] || "application/octet-stream";
   const payload = match[2] ? atob(match[3]) : decodeURIComponent(match[3]);
   const bytes = new Uint8Array(payload.length);

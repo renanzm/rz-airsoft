@@ -1,6 +1,7 @@
 /* Campo com sugestões (combobox ARIA). Usado para escolher cliente e serviços. */
 import { html, render } from "../core/dom.js";
 import { fuzzyScore } from "../core/util.js";
+import { tr } from "../core/i18n.js";
 
 /**
  * attachCombo(input, {
@@ -55,7 +56,7 @@ export function attachCombo(input, { source, onSelect, createLabel, onCreate, mi
     const exact = options.some((o) => o.label.trim().toLowerCase() === query.toLowerCase());
     const showCreate = Boolean(onCreate && query && !exact);
     if (!options.length && !showCreate) {
-      render(list, html`<div class="combo-empty">Nenhum resultado</div>`);
+      render(list, html`<div class="combo-empty">${tr("Nenhum resultado")}</div>`);
     } else {
       render(
         list,
@@ -66,7 +67,7 @@ export function attachCombo(input, { source, onSelect, createLabel, onCreate, mi
           </button>`
         )}${showCreate
           ? html`<button type="button" class="combo-option" role="option" id="${listId}-new" data-combo-create aria-selected="${active === options.length ? "true" : "false"}" tabindex="-1">
-              <span class="avatar avatar-sm">+</span><span>${createLabel ? createLabel(query) : `Usar “${query}”`}</span>
+              <span class="avatar avatar-sm">+</span><span>${createLabel ? createLabel(query) : tr("Usar “{q}”", { q: query })}</span>
             </button>`
           : ""}`
       );

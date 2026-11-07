@@ -11,6 +11,11 @@ test("dinheiro em centavos", () => {
   assert.equal(nbsp(f.money(null)), "R$ 0,00");
 });
 
+test("CSV em português usa ponto e vírgula e vírgula decimal", () => {
+  assert.equal(f.csvDelimiter(), ";");
+  assert.equal(f.csvMoney(123456), "1234,56");
+});
+
 test("parseMoney entende os formatos do sistema antigo", () => {
   assert.equal(f.parseMoney("R$ 75,00"), 7500);
   assert.equal(f.parseMoney("R$ 1.234,56"), 123456);

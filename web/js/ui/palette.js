@@ -3,6 +3,7 @@ import { html, render } from "../core/dom.js";
 import { fuzzyScore } from "../core/util.js";
 import { icon } from "./icons.js";
 import { modal } from "./dialog.js";
+import { tr } from "../core/i18n.js";
 
 let providers = [];
 let isOpen = false;
@@ -49,14 +50,14 @@ export function openPalette(initial = "") {
     content: html`
       <div class="palette-search">
         ${icon("search", { size: 18 })}
-        <input class="palette-input" type="text" placeholder="Busque telas, ações, OS ou clientes…" aria-label="Buscar" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list" value="${initial}" autofocus />
+        <input class="palette-input" type="text" placeholder="${tr("Busque telas, ações, OS ou clientes…")}" aria-label="${tr("Buscar")}" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list" value="${initial}" autofocus />
         <kbd class="kbd">Esc</kbd>
       </div>
-      <div class="palette-list" id="palette-list" role="listbox" aria-label="Resultados"></div>
+      <div class="palette-list" id="palette-list" role="listbox" aria-label="${tr("Resultados")}"></div>
       <div class="palette-foot">
-        <span><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd> navegar</span>
-        <span><kbd class="kbd">Enter</kbd> abrir</span>
-        <span><kbd class="kbd">Ctrl</kbd><kbd class="kbd">K</kbd> abre de qualquer tela</span>
+        <span><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd> ${tr("navegar")}</span>
+        <span><kbd class="kbd">Enter</kbd> ${tr("abrir")}</span>
+        <span><kbd class="kbd">Ctrl</kbd><kbd class="kbd">K</kbd> ${tr("abre de qualquer tela")}</span>
       </div>
     `,
     onClose: () => {
@@ -91,7 +92,7 @@ export function openPalette(initial = "") {
               })}
             </div>`
           )}`
-        : html`<div class="palette-empty">${icon("search", { size: 20 })}<p>Nada encontrado para “${input.value}”.</p></div>`
+        : html`<div class="palette-empty">${icon("search", { size: 20 })}<p>${tr("Nada encontrado para “{q}”.", { q: input.value })}</p></div>`
     );
     input.setAttribute("aria-activedescendant", flat.length ? `pal-${active}` : "");
     listEl.querySelector(".palette-item.active")?.scrollIntoView({ block: "nearest" });

@@ -1,6 +1,7 @@
 /* Menu suspenso (Popover API): setas navegam, Enter escolhe, Esc fecha. */
 import { esc } from "../core/dom.js";
 import { icon } from "./icons.js";
+import { tr } from "../core/i18n.js";
 
 let openMenuEl = null;
 let lastClosed = { trigger: null, at: 0 };
@@ -21,7 +22,7 @@ function place(menu, trigger, align) {
 /**
  * items: [{ label, icon, hint, kbd, danger, disabled, checked, run }, "-", { heading }]
  */
-export function openMenu(trigger, items, { align = "start", label = "Ações", minWidth = 200 } = {}) {
+export function openMenu(trigger, items, { align = "start", label = tr("Ações"), minWidth = 200 } = {}) {
   // O clique no próprio botão fecha o menu (light dismiss) antes de chegar aqui.
   if (lastClosed.trigger === trigger && performance.now() - lastClosed.at < 300) return;
   if (openMenuEl) {

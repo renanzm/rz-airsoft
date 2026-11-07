@@ -1,26 +1,28 @@
 /* Regras do negócio: ordens de serviço, clientes, catálogo e configurações. */
 import { fold, sum, uid } from "./util.js";
 import { joules, parseNumber, todayISO } from "./format.js";
+import { tr, locale, localizeDefault } from "./i18n.js";
 
 export const STATUSES = [
-  { id: "fila", label: "Na fila", short: "Fila", icon: "circleDashed", hint: "Recebida, aguardando a bancada" },
-  { id: "bancada", label: "Na bancada", short: "Bancada", icon: "wrench", hint: "Em manutenção" },
-  { id: "aguardando", label: "Aguardando peças", short: "Aguardando", icon: "pause", hint: "Parada por peça ou aprovação" },
-  { id: "pronto", label: "Pronto", short: "Pronto", icon: "checkCircle", hint: "Pronta para retirada" },
-  { id: "entregue", label: "Entregue", short: "Entregue", icon: "packageCheck", hint: "Devolvida ao cliente" },
+  { id: "fila", label: tr("Na fila"), short: tr("Fila"), icon: "circleDashed", hint: tr("Recebida, aguardando a bancada") },
+  { id: "bancada", label: tr("Na bancada"), short: tr("Bancada"), icon: "wrench", hint: tr("Em manutenção") },
+  { id: "aguardando", label: tr("Aguardando peças"), short: tr("Aguardando"), icon: "pause", hint: tr("Parada por peça ou aprovação") },
+  { id: "pronto", label: tr("Pronto"), short: tr("Pronto"), icon: "checkCircle", hint: tr("Pronta para retirada") },
+  { id: "entregue", label: tr("Entregue"), short: tr("Entregue"), icon: "packageCheck", hint: tr("Devolvida ao cliente") },
 ];
 export const STATUS = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
 export const OPEN_STATUSES = ["fila", "bancada", "aguardando", "pronto"];
 
+/* Gravados como estão aqui; a tela traduz com trValue(). */
 export const EQUIPMENT_TYPES = ["AEG", "GBB", "HPA", "Spring", "Sniper", "Pistola elétrica", "Outro"];
 
 export const PAYMENT_METHODS = [
   { id: "pix", label: "Pix" },
-  { id: "dinheiro", label: "Dinheiro" },
-  { id: "debito", label: "Cartão de débito" },
-  { id: "credito", label: "Cartão de crédito" },
-  { id: "transferencia", label: "Transferência" },
-  { id: "outro", label: "Outro" },
+  { id: "dinheiro", label: tr("Dinheiro") },
+  { id: "debito", label: tr("Cartão de débito") },
+  { id: "credito", label: tr("Cartão de crédito") },
+  { id: "transferencia", label: tr("Transferência") },
+  { id: "outro", label: tr("Outro") },
 ];
 
 export const BB_WEIGHTS = [
@@ -33,18 +35,21 @@ export const REPORT_FIELDS = [
   { key: "gearbox", label: "Gearbox", icon: "settings" },
   { key: "nozzle", label: "Nozzle", icon: "zap" },
   { key: "motor", label: "Motor", icon: "cpu" },
-  { key: "mola", label: "Mola", icon: "activity" },
-  { key: "cilindro", label: "Cilindro", icon: "battery" },
-  { key: "cano", label: "Cano", icon: "crosshair" },
-  { key: "bb", label: "BB utilizada", icon: "target" },
+  { key: "mola", label: tr("Mola"), icon: "activity" },
+  { key: "cilindro", label: tr("Cilindro"), icon: "battery" },
+  { key: "cano", label: tr("Cano"), icon: "crosshair" },
+  { key: "bb", label: tr("BB utilizada"), icon: "target" },
 ];
+
+const WARRANTY_TERMS =
+  "Garantia de {garantia} sobre o serviço executado, a contar da entrega. A garantia não cobre mau uso, quedas, BBs de baixa qualidade ou intervenção de terceiros. Equipamentos não retirados em até 90 dias após o aviso de conclusão poderão ter cobrança de armazenamento.";
 
 export const DEFAULT_SETTINGS = {
   id: "main",
   business: {
     name: "RZ Airsoft",
-    subtitle: "Manutenção de airsoft",
-    tagline: "Precisão • Desempenho • Confiança",
+    subtitle: tr("Manutenção de airsoft"),
+    tagline: tr("Precisão • Desempenho • Confiança"),
     phone: "",
     email: "",
     instagram: "",
@@ -56,27 +61,41 @@ export const DEFAULT_SETTINGS = {
     digits: 4,
     warrantyDays: 90,
     technician: "",
-    terms:
-      "Garantia de {garantia} sobre o serviço executado, a contar da entrega. A garantia não cobre mau uso, quedas, BBs de baixa qualidade ou intervenção de terceiros. Equipamentos não retirados em até 90 dias após o aviso de conclusão poderão ter cobrança de armazenamento.",
+    terms: tr(WARRANTY_TERMS),
   },
   report: {
-    title: "Relatório técnico",
-    subtitle: "Manutenção preventiva",
-    footer: "Manutenção realizada com precisão e compromisso",
+    title: tr("Relatório técnico"),
+    subtitle: tr("Manutenção preventiva"),
+    footer: tr("Manutenção realizada com precisão e compromisso"),
   },
 };
 
 export const DEFAULT_CATALOG = {
   id: "main",
   meta: {
-    title: "Serviços e preços",
-    subtitle: "Tabela de serviços",
-    intro: "Manutenção, diagnóstico e melhorias para seu equipamento de airsoft.",
+    title: tr("Serviços e preços"),
+    subtitle: tr("Tabela de serviços"),
+    intro: tr("Manutenção, diagnóstico e melhorias para seu equipamento de airsoft."),
     contact: "",
+    note: tr("Valores e condições podem ser ajustados conforme o serviço."),
+    footer: tr("Precisão • Desempenho • Confiança"),
+  },
+  categories: [],
+};
+
+/* Textos padrão em português. Depois de salvos nos dados, continuam acompanhando
+ * o idioma enquanto ninguém os editar (ver localized). */
+export const DEFAULT_TEXTS = {
+  business: { subtitle: "Manutenção de airsoft", tagline: "Precisão • Desempenho • Confiança" },
+  orders: { terms: WARRANTY_TERMS },
+  report: { title: "Relatório técnico", subtitle: "Manutenção preventiva", footer: "Manutenção realizada com precisão e compromisso" },
+  catalog: {
+    title: "Serviços e preços",
+    subtitle: ["Tabela de serviços", "Catálogo de serviços"],
+    intro: "Manutenção, diagnóstico e melhorias para seu equipamento de airsoft.",
     note: "Valores e condições podem ser ajustados conforme o serviço.",
     footer: "Precisão • Desempenho • Confiança",
   },
-  categories: [],
 };
 
 /* ------------------------------------------------------------ ordens */
@@ -180,7 +199,7 @@ export function fpsJoules(order, side = "after", key = "g20") {
 }
 
 export function orderLabel(order) {
-  return order.number ? `OS ${order.number}` : "OS sem número";
+  return order.number ? tr("OS {n}", { n: order.number }) : tr("OS sem número");
 }
 
 export function equipmentLabel(equipment) {
@@ -190,7 +209,7 @@ export function equipmentLabel(equipment) {
 
 export function orderTitle(order) {
   const equip = equipmentLabel(order.equipment);
-  return [order.client?.name, equip].filter(Boolean).join(" — ") || "Sem cliente";
+  return [order.client?.name, equip].filter(Boolean).join(" — ") || tr("Sem cliente");
 }
 
 export function orderSearchText(order) {
@@ -227,7 +246,7 @@ export function nextOrderNumber(orders, settings) {
 }
 
 export function compareNumbers(a, b) {
-  return String(a || "").localeCompare(String(b || ""), "pt-BR", { numeric: true });
+  return String(a || "").localeCompare(String(b || ""), locale(), { numeric: true });
 }
 
 /** Registra mudança de status no histórico da OS. */
@@ -314,35 +333,42 @@ export function catalogItems(catalog) {
   return out;
 }
 
+function localized(group, sources) {
+  const out = { ...group };
+  for (const [key, source] of Object.entries(sources)) out[key] = localizeDefault(out[key], source);
+  return out;
+}
+
 export function settingsWithDefaults(settings) {
   const s = settings || {};
   return {
     ...DEFAULT_SETTINGS,
     ...s,
-    business: { ...DEFAULT_SETTINGS.business, ...(s.business || {}) },
-    orders: { ...DEFAULT_SETTINGS.orders, ...(s.orders || {}) },
-    report: { ...DEFAULT_SETTINGS.report, ...(s.report || {}) },
+    business: localized({ ...DEFAULT_SETTINGS.business, ...(s.business || {}) }, DEFAULT_TEXTS.business),
+    orders: localized({ ...DEFAULT_SETTINGS.orders, ...(s.orders || {}) }, DEFAULT_TEXTS.orders),
+    report: localized({ ...DEFAULT_SETTINGS.report, ...(s.report || {}) }, DEFAULT_TEXTS.report),
   };
 }
 
 export function catalogWithDefaults(catalog) {
   const c = catalog || {};
-  return { ...DEFAULT_CATALOG, ...c, meta: { ...DEFAULT_CATALOG.meta, ...(c.meta || {}) }, categories: Array.isArray(c.categories) ? c.categories : [] };
+  return { ...DEFAULT_CATALOG, ...c, meta: localized({ ...DEFAULT_CATALOG.meta, ...(c.meta || {}) }, DEFAULT_TEXTS.catalog), categories: Array.isArray(c.categories) ? c.categories : [] };
 }
 
 /** Mensagem de WhatsApp pronta para cada situação. */
 export function whatsappMessage(order, settings, kind = "status") {
   const name = (order.client?.name || "").split(" ")[0];
-  const greeting = name ? `Olá, ${name}!` : "Olá!";
+  const greeting = name ? tr("Olá, {name}!", { name }) : tr("Olá!");
   const shop = settings?.business?.name || "RZ Airsoft";
-  const equip = equipmentLabel(order.equipment) || "sua réplica";
-  const os = order.number ? ` (OS ${order.number})` : "";
+  const equip = equipmentLabel(order.equipment) || tr("sua réplica");
+  const os = order.number ? ` (${tr("OS {n}", { n: order.number })})` : "";
+  const parts = { greeting, shop, equip, os };
   if (kind === "pronto" || order.status === "pronto") {
-    return `${greeting} Aqui é da ${shop}. A ${equip}${os} está pronta para retirada. Qualquer dúvida, é só chamar.`;
+    return tr("{greeting} Aqui é da {shop}. A {equip}{os} está pronta para retirada. Qualquer dúvida, é só chamar.", parts);
   }
   if (order.status === "entregue") {
-    return `${greeting} Aqui é da ${shop}. Obrigado pela confiança no serviço da ${equip}${os}! Se precisar de algo, estamos à disposição.`;
+    return tr("{greeting} Aqui é da {shop}. Obrigado pela confiança no serviço da {equip}{os}! Se precisar de algo, estamos à disposição.", parts);
   }
-  const status = STATUS[order.status]?.label.toLowerCase() || "em andamento";
-  return `${greeting} Aqui é da ${shop}. Passando para avisar que a ${equip}${os} está ${status}.`;
+  const status = STATUS[order.status]?.label.toLowerCase() || tr("em andamento");
+  return tr("{greeting} Aqui é da {shop}. Passando para avisar que a {equip}{os} está {status}.", { ...parts, status });
 }

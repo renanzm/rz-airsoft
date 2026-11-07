@@ -26,45 +26,49 @@
     <section class="auth-card" aria-labelledby="auth-title">
       <header class="auth-brand">
         <span class="auth-mark"><img src="/assets/logo.png" alt="" width="34" height="34" /></span>
-        <span class="auth-brand-text"><strong>RZ Airsoft</strong><small>Gestão da oficina</small></span>
+        <span class="auth-brand-text"><strong>RZ Airsoft</strong><small data-i18n>Gestão da oficina</small></span>
       </header>
 
       <div class="auth-copy">
-        <h1 id="auth-title">Entrar</h1>
-        <p id="auth-desc">Use o usuário e a senha desta instalação.</p>
+        <h1 id="auth-title" data-i18n>Entrar</h1>
+        <p id="auth-desc" data-i18n>Use o usuário e a senha desta instalação.</p>
       </div>
 
-      <p class="auth-status" id="auth-status" role="status">Verificando acesso…</p>
+      <p class="auth-status" id="auth-status" role="status" data-i18n>Verificando acesso…</p>
 
       <form class="auth-form" id="auth-form" novalidate hidden>
         <label class="field">
-          <span class="label">Usuário</span>
+          <span class="label" data-i18n>Usuário</span>
           <input class="input input-lg" id="username" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" required />
-          <span class="hint" id="username-hint" hidden>De 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado.</span>
+          <span class="hint" id="username-hint" hidden data-i18n>De 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado.</span>
         </label>
         <label class="field">
-          <span class="label">Senha</span>
+          <span class="label" data-i18n>Senha</span>
           <span class="input-wrap">
             <input class="input input-lg" id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required />
-            <button type="button" class="btn btn-ghost btn-icon btn-sm auth-eye" id="toggle-password" aria-label="Mostrar senha" aria-pressed="false"></button>
+            <button type="button" class="btn btn-ghost btn-icon btn-sm auth-eye" id="toggle-password" aria-label="Mostrar senha" aria-pressed="false" data-i18n-label></button>
           </span>
           <span class="strength" id="strength" hidden><span class="strength-bar"><span></span></span><span class="strength-label"></span></span>
         </label>
         <label class="field" id="confirm-field" hidden>
-          <span class="label">Confirmar senha</span>
+          <span class="label" data-i18n>Confirmar senha</span>
           <input class="input input-lg" id="confirm" name="confirm" type="password" autocomplete="new-password" maxlength="128" />
         </label>
-        <label class="check" id="remember-field"><input type="checkbox" id="remember" checked />Manter conectado neste computador</label>
+        <label class="check" id="remember-field"><input type="checkbox" id="remember" checked /><span data-i18n>Manter conectado neste computador</span></label>
         <div class="callout callout-danger" id="auth-error" role="alert" hidden></div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit">Entrar</button>
-        <p class="auth-help" id="forgot">Esqueceu a senha? No computador da oficina, abra <strong>REDEFINIR_SENHA.bat</strong> na pasta do sistema.</p>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit" data-i18n>Entrar</button>
+        <p class="auth-help" id="forgot" data-i18n="html">Esqueceu a senha? No computador da oficina, abra <strong>REDEFINIR_SENHA.bat</strong> na pasta do sistema.</p>
       </form>
 
       <footer class="auth-foot">
-        <span class="auth-secure"><span class="dot dot-success"></span>Conexão com o servidor desta oficina</span>
+        <span class="auth-secure"><span class="dot dot-success"></span><span data-i18n>Conexão com o servidor desta oficina</span></span>
       </footer>
     </section>
-    <p class="auth-note">Os dados ficam no computador da oficina, na pasta sincronizada pelo OneDrive.</p>
+    <p class="auth-note" data-i18n>Os dados ficam no computador da oficina, na pasta sincronizada pelo OneDrive.</p>
+    <div class="segmented auth-lang" role="group" aria-label="Idioma" data-i18n-label>
+      <button type="button" data-lang="pt-BR">Português</button>
+      <button type="button" data-lang="en-US">English</button>
+    </div>
   </main>
   <noscript><p style="padding:24px;text-align:center">Ative o JavaScript para entrar.</p></noscript>
 </body>

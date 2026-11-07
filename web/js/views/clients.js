@@ -4,28 +4,29 @@ import * as data from "../core/data.js";
 import * as store from "../core/store.js";
 import { setQuery, navigate } from "../core/router.js";
 import { clientOrders, orderTotal, isPaid, OPEN_STATUSES, newClient, findClientByName } from "../core/model.js";
-import { money, phone as fmtPhone, maskPhone, relative, date, initials, plural, whatsappLink, todayISO } from "../core/format.js";
+import { money, phone as fmtPhone, maskPhone, relative, date, initials, plural, whatsappLink, todayISO, csvDelimiter, csvMoney } from "../core/format.js";
 import { matches, downloadBlob } from "../core/util.js";
 import { icon } from "../ui/icons.js";
 import { modal } from "../ui/dialog.js";
 import { toast } from "../ui/toast.js";
 import { setCrumbs } from "../ui/shell.js";
+import { tr } from "../core/i18n.js";
 
 export function openNewClient({ name = "", onCreated } = {}) {
   const { el, close } = modal({
-    title: "Novo cliente",
-    description: "Só o nome é obrigatório. O resto você completa quando souber.",
+    title: tr("Novo cliente"),
+    description: tr("Só o nome é obrigatório. O resto você completa quando souber."),
     content: html`<form class="stack" data-form novalidate>
-      <label class="field"><span class="label">Nome <span class="req">*</span></span><input class="input" name="name" value="${name}" autocomplete="off" required autofocus /><span class="field-error" hidden></span></label>
+      <label class="field"><span class="label">${tr("Nome")} <span class="req">*</span></span><input class="input" name="name" value="${name}" autocomplete="off" required autofocus /><span class="field-error" hidden></span></label>
       <div class="grid-2">
-        <label class="field"><span class="label">WhatsApp / telefone</span><input class="input" name="phone" inputmode="tel" placeholder="(48) 99999-9999" /></label>
-        <label class="field"><span class="label">Instagram</span><input class="input" name="instagram" placeholder="@usuario" autocomplete="off" /></label>
-        <label class="field"><span class="label">E-mail</span><input class="input" name="email" type="email" autocomplete="off" /></label>
-        <label class="field"><span class="label">Cidade</span><input class="input" name="city" autocomplete="off" /></label>
+        <label class="field"><span class="label">${tr("WhatsApp / telefone")}</span><input class="input" name="phone" inputmode="tel" placeholder="(48) 99999-9999" /></label>
+        <label class="field"><span class="label">Instagram</span><input class="input" name="instagram" placeholder="${tr("@usuario")}" autocomplete="off" /></label>
+        <label class="field"><span class="label">${tr("E-mail")}</span><input class="input" name="email" type="email" autocomplete="off" /></label>
+        <label class="field"><span class="label">${tr("Cidade")}</span><input class="input" name="city" autocomplete="off" /></label>
       </div>
-      <label class="field"><span class="label">Notas</span><textarea class="textarea" name="notes" rows="3" placeholder="Time, preferências, combinados…"></textarea></label>
+      <label class="field"><span class="label">${tr("Notas")}</span><textarea class="textarea" name="notes" rows="3" placeholder="${tr("Time, preferências, combinados…")}"></textarea></label>
     </form>`,
-    footer: html`<button type="button" class="btn btn-secondary" data-close>Cancelar</button><button type="button" class="btn btn-primary" data-save>Cadastrar cliente</button>`,
+    footer: html`<button type="button" class="btn btn-secondary" data-close>${tr("Cancelar")}</button><button type="button" class="btn btn-primary" data-save>${tr("Cadastrar cliente")}</button>`,
   });
   const form = el.querySelector("[data-form]");
   form.elements.phone.addEventListener("input", (e) => (e.target.value = maskPhone(e.target.value)));
@@ -34,7 +35,7 @@ export function openNewClient({ name = "", onCreated } = {}) {
     const value = f.name.value.trim();
     if (!value) {
       const err = el.querySelector(".field-error");
-      err.textContent = "Informe o nome do cliente.";
+      err.textContent = tr("Informe o nome do cliente.");
       err.hidden = false;
       f.name.setAttribute("aria-invalid", "true");
       f.name.focus();
@@ -42,9 +43,9 @@ export function openNewClient({ name = "", onCreated } = {}) {
     }
     const existing = findClientByName(data.clients(), value);
     if (existing) {
-      toast.info(`${existing.name} já está cadastrado`, {
+      toast.info(tr("{name} já está cadastrado", { name: existing.name }), {
         action: {
-          label: "Abrir ficha",
+          label: tr("Abrir ficha"),
           run: () => {
             close();
             navigate(`/clientes/${existing.id}`);
@@ -64,7 +65,7 @@ export function openNewClient({ name = "", onCreated } = {}) {
       })
     );
     close("ok");
-    toast.success(`${client.name} cadastrado`);
+    toast.success(tr("{name} cadastrado", { name: client.name }));
     onCreated?.(client);
   };
   el.querySelector("[data-save]").addEventListener("click", save);
@@ -76,7 +77,7 @@ export function openNewClient({ name = "", onCreated } = {}) {
 
 export function mount(el, ctx) {
   let q = ctx.query;
-  setCrumbs([{ label: "Clientes", href: "/clientes" }]);
+  setCrumbs([{ label: tr("Clientes"), href: "/clientes" }]);
   el.innerHTML = '<div class="page" data-clients></div>';
   const root = el.firstElementChild;
 
@@ -106,42 +107,42 @@ export function mount(el, ctx) {
       html`
         <header class="page-head">
           <div class="page-head-main">
-            <h1 class="page-title">Clientes</h1>
-            <p class="page-desc">${all.length ? html`${plural(all.length, "cliente", "clientes")} · ${plural(withOpen, "com OS em aberto", "com OS em aberto")} · ${money(totalSpent)} em serviços pagos` : "Quem deixa a réplica na bancada."}</p>
+            <h1 class="page-title">${tr("Clientes")}</h1>
+            <p class="page-desc">${all.length ? html`${plural(all.length, tr("cliente"), tr("clientes"))} · ${plural(withOpen, tr("com OS em aberto"), tr("com OS em aberto"))} · ${tr("{v} em serviços pagos", { v: money(totalSpent) })}` : tr("Quem deixa a réplica na bancada.")}</p>
           </div>
           <div class="page-actions">
-            ${all.length ? html`<button type="button" class="btn btn-secondary" data-act="csv">${icon("download", { size: 16 })}Exportar</button>` : ""}
-            <button type="button" class="btn btn-primary" data-act="new">${icon("userPlus", { size: 16 })}Novo cliente</button>
+            ${all.length ? html`<button type="button" class="btn btn-secondary" data-act="csv">${icon("download", { size: 16 })}${tr("Exportar")}</button>` : ""}
+            <button type="button" class="btn btn-primary" data-act="new">${icon("userPlus", { size: 16 })}${tr("Novo cliente")}</button>
           </div>
         </header>
         ${all.length
           ? html`
               <div class="toolbar">
-                <div class="input-wrap search">${icon("search", { size: 15 })}<input class="input" type="search" placeholder="Buscar por nome, telefone, cidade, réplica…" value="${search}" data-search aria-label="Buscar clientes" /></div>
-                <div class="segmented" role="group" aria-label="Ordenar">
-                  ${[["name", "Nome"], ["last", "Última visita"], ["spent", "Valor gasto"], ["count", "Nº de OS"]].map(([k, label]) => html`<button type="button" data-sort="${k}" aria-pressed="${sort === k ? "true" : "false"}">${label}</button>`)}
+                <div class="input-wrap search">${icon("search", { size: 15 })}<input class="input" type="search" placeholder="${tr("Buscar por nome, telefone, cidade, réplica…")}" value="${search}" data-search aria-label="${tr("Buscar clientes")}" /></div>
+                <div class="segmented" role="group" aria-label="${tr("Ordenar")}">
+                  ${[["name", tr("Nome")], ["last", tr("Última visita")], ["spent", tr("Valor gasto")], ["count", tr("Nº de OS")]].map(([k, label]) => html`<button type="button" data-sort="${k}" aria-pressed="${sort === k ? "true" : "false"}">${label}</button>`)}
                 </div>
               </div>
               ${list.length
                 ? html`<div class="table-wrap"><table class="table">
-                    <thead><tr><th>Cliente</th><th>Contato</th><th class="hide-md">Equipamentos</th><th class="num">OS</th><th class="num hide-sm">Valor pago</th><th class="hide-sm">Última visita</th><th class="w-actions"></th></tr></thead>
+                    <thead><tr><th>${tr("Cliente")}</th><th>${tr("Contato")}</th><th class="hide-md">${tr("Equipamentos")}</th><th class="num">${tr("OS")}</th><th class="num hide-sm">${tr("Valor pago")}</th><th class="hide-sm">${tr("Última visita")}</th><th class="w-actions"></th></tr></thead>
                     <tbody>${list.map(({ client, count, open, spent, last }) => html`<tr class="clickable" data-key="${client.id}" data-open="${client.id}">
-                      <td><div class="row"><span class="avatar">${initials(client.name)}</span><div class="cell-main"><a class="link-strong" href="/clientes/${client.id}">${client.name || "Sem nome"}</a><small>${[client.city, client.instagram].filter(Boolean).join(" · ") || (client.notes ? client.notes.slice(0, 60) : "")}</small></div></div></td>
+                      <td><div class="row"><span class="avatar">${initials(client.name)}</span><div class="cell-main"><a class="link-strong" href="/clientes/${client.id}">${client.name || tr("Sem nome")}</a><small>${[client.city, client.instagram].filter(Boolean).join(" · ") || (client.notes ? client.notes.slice(0, 60) : "")}</small></div></div></td>
                       <td class="nowrap">${client.phone ? fmtPhone(client.phone) : html`<span class="subtle">—</span>`}</td>
                       <td class="hide-md"><span class="truncate block">${client.equipment.length ? client.equipment.map((e) => [e.model, e.brand].filter(Boolean).join(" ")).join(", ") : html`<span class="subtle">—</span>`}</span></td>
-                      <td class="num">${count}${open ? html` <span class="badge badge-accent">${open} aberta${open > 1 ? "s" : ""}</span>` : ""}</td>
+                      <td class="num">${count}${open ? html` <span class="badge badge-accent">${open > 1 ? tr("{n} abertas", { n: open }) : tr("{n} aberta", { n: open })}</span>` : ""}</td>
                       <td class="num hide-sm">${spent ? money(spent) : html`<span class="subtle">—</span>`}</td>
                       <td class="hide-sm nowrap">${last ? html`<span title="${date(last)}">${relative(last)}</span>` : html`<span class="subtle">—</span>`}</td>
-                      <td class="w-actions" data-stop>${client.phone ? html`<a class="btn btn-ghost btn-icon btn-sm" href="${whatsappLink(client.phone)}" target="_blank" rel="noopener" aria-label="WhatsApp de ${client.name}" title="Conversar no WhatsApp">${icon("message", { size: 16 })}</a>` : ""}</td>
+                      <td class="w-actions" data-stop>${client.phone ? html`<a class="btn btn-ghost btn-icon btn-sm" href="${whatsappLink(client.phone)}" target="_blank" rel="noopener" aria-label="${tr("WhatsApp de {name}", { name: client.name })}" title="${tr("Conversar no WhatsApp")}">${icon("message", { size: 16 })}</a>` : ""}</td>
                     </tr>`)}</tbody>
                   </table></div>`
-                : html`<div class="card"><div class="empty"><div class="empty-icon">${icon("search", { size: 20 })}</div><h3>Ninguém encontrado</h3><p>Nenhum cliente combina com “${search}”.</p></div></div>`}
+                : html`<div class="card"><div class="empty"><div class="empty-icon">${icon("search", { size: 20 })}</div><h3>${tr("Ninguém encontrado")}</h3><p>${tr("Nenhum cliente combina com “{q}”.", { q: search })}</p></div></div>`}
             `
           : html`<div class="card"><div class="empty">
               <div class="empty-icon">${icon("users", { size: 20 })}</div>
-              <h3>Nenhum cliente cadastrado</h3>
-              <p>Os clientes também são cadastrados automaticamente quando você cria uma OS com um nome novo.</p>
-              <div class="btn-group"><button type="button" class="btn btn-primary" data-act="new">${icon("userPlus", { size: 16 })}Cadastrar cliente</button></div>
+              <h3>${tr("Nenhum cliente cadastrado")}</h3>
+              <p>${tr("Os clientes também são cadastrados automaticamente quando você cria uma OS com um nome novo.")}</p>
+              <div class="btn-group"><button type="button" class="btn btn-primary" data-act="new">${icon("userPlus", { size: 16 })}${tr("Cadastrar cliente")}</button></div>
             </div></div>`}
       `
     );
@@ -149,11 +150,11 @@ export function mount(el, ctx) {
 
   function exportCsv() {
     const list = rows();
-    const head = ["Nome", "Telefone", "E-mail", "Instagram", "Cidade", "Equipamentos", "OS", "Valor pago", "Última visita", "Notas"];
+    const head = [tr("Nome"), tr("Telefone"), tr("E-mail"), "Instagram", tr("Cidade"), tr("Equipamentos"), tr("OS"), tr("Valor pago"), tr("Última visita"), tr("Notas")];
     const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const lines = list.map(({ client, count, spent, last }) => [client.name, fmtPhone(client.phone), client.email, client.instagram, client.city, client.equipment.map((e) => [e.model, e.brand].filter(Boolean).join(" ")).join("; "), count, (spent / 100).toFixed(2).replace(".", ","), date(last, ""), client.notes]);
-    downloadBlob(new Blob(["﻿" + [head, ...lines].map((r) => r.map(esc).join(";")).join("\r\n")], { type: "text/csv;charset=utf-8" }), `clientes_${todayISO()}.csv`);
-    toast.success("Clientes exportados em CSV");
+    const lines = list.map(({ client, count, spent, last }) => [client.name, fmtPhone(client.phone), client.email, client.instagram, client.city, client.equipment.map((e) => [e.model, e.brand].filter(Boolean).join(" ")).join("; "), count, csvMoney(spent), date(last, ""), client.notes]);
+    downloadBlob(new Blob(["﻿" + [head, ...lines].map((r) => r.map(esc).join(csvDelimiter())).join("\r\n")], { type: "text/csv;charset=utf-8" }), `${tr("clientes")}_${todayISO()}.csv`);
+    toast.success(tr("Clientes exportados em CSV"));
   }
 
   const off = [

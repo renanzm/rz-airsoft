@@ -1,6 +1,7 @@
 /* Diálogos e painéis laterais com <dialog> nativo (foco preso, Esc fecha). */
 import { html, raw } from "../core/dom.js";
 import { icon } from "./icons.js";
+import { tr } from "../core/i18n.js";
 
 /**
  * Abre um modal. `content` é o HTML do corpo. Devolve
@@ -19,7 +20,7 @@ export function modal({ title = "", description = "", content = "", footer = "",
               <h2 class="dialog-title" id="${titleId}">${title}</h2>
               ${description ? html`<p class="dialog-desc">${description}</p>` : ""}
             </div>
-            ${dismissable ? html`<button type="button" class="btn btn-ghost btn-icon btn-sm dialog-x" data-close aria-label="Fechar">${icon("x")}</button>` : ""}
+            ${dismissable ? html`<button type="button" class="btn btn-ghost btn-icon btn-sm dialog-x" data-close aria-label="${tr("Fechar")}">${icon("x")}</button>` : ""}
           </header>`
         : ""}
       <div class="dialog-body">${raw(String(content))}</div>
@@ -65,7 +66,7 @@ export function modal({ title = "", description = "", content = "", footer = "",
 }
 
 /** Confirmação: resolve true/false. */
-export function confirm({ title = "Tem certeza?", message = "", confirmLabel = "Confirmar", cancelLabel = "Cancelar", danger = false } = {}) {
+export function confirm({ title = tr("Tem certeza?"), message = "", confirmLabel = tr("Confirmar"), cancelLabel = tr("Cancelar"), danger = false } = {}) {
   const { result } = modal({
     title,
     size: "sm",
@@ -79,7 +80,7 @@ export function confirm({ title = "Tem certeza?", message = "", confirmLabel = "
 }
 
 /** Pergunta um texto curto. Resolve com o texto ou null. */
-export function promptText({ title, label = "", value = "", placeholder = "", confirmLabel = "Salvar" } = {}) {
+export function promptText({ title, label = "", value = "", placeholder = "", confirmLabel = tr("Salvar") } = {}) {
   const { el, close, result } = modal({
     title,
     size: "sm",
@@ -87,7 +88,7 @@ export function promptText({ title, label = "", value = "", placeholder = "", co
       <label class="field"><span class="label">${label}</span>
       <input class="input" name="value" value="${value}" placeholder="${placeholder}" autocomplete="off" autofocus /></label>
     </form>`,
-    footer: html`<button type="button" class="btn btn-secondary" data-close>Cancelar</button>
+    footer: html`<button type="button" class="btn btn-secondary" data-close>${tr("Cancelar")}</button>
       <button type="button" class="btn btn-primary" data-submit>${confirmLabel}</button>`,
   });
   const submit = () => close(el.querySelector("input[name=value]").value.trim());

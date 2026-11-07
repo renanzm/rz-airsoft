@@ -9,12 +9,13 @@ import { icon } from "../ui/icons.js";
 import { columnChart, bindChartTips, sparkline, barList } from "../ui/charts.js";
 import { setCrumbs } from "../ui/shell.js";
 import { openNewOrder } from "../ui/new-order.js";
+import { tr, trHtml } from "../core/i18n.js";
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return "Bom dia";
-  if (h < 18) return "Boa tarde";
-  return "Boa noite";
+  if (h < 12) return tr("Bom dia");
+  if (h < 18) return tr("Boa tarde");
+  return tr("Boa noite");
 }
 
 function monthKey(date) {
@@ -37,7 +38,7 @@ function stat({ label, value, delta, deltaGood, detail, spark, href, icon: name 
 }
 
 export function mount(el) {
-  setCrumbs([{ label: "Painel", href: "/" }]);
+  setCrumbs([{ label: tr("Painel"), href: "/" }]);
   el.innerHTML = '<div class="page dashboard" data-dash></div>';
   const root = el.firstElementChild;
   const unbindTips = bindChartTips(root);
@@ -106,64 +107,64 @@ export function mount(el) {
         <header class="page-head">
           <div class="page-head-main">
             <h1 class="page-title">${greeting()}${user?.username ? `, ${user.username}` : ""}</h1>
-            <p class="page-desc">Resumo da oficina · ${monthYear(new Date())}${late.length ? html` · <a class="danger-text" href="/ordens?status=abertas">${plural(late.length, "OS atrasada", "OS atrasadas")}</a>` : ""}</p>
+            <p class="page-desc">${tr("Resumo da oficina ·")} ${monthYear(new Date())}${late.length ? html` · <a class="danger-text" href="/ordens?status=abertas">${plural(late.length, tr("OS atrasada"), tr("OS atrasadas"))}</a>` : ""}</p>
           </div>
           <div class="page-actions">
-            <a class="btn btn-secondary" href="/ordens?view=board">${icon("columns", { size: 16 })}Quadro da bancada</a>
-            <button type="button" class="btn btn-primary" data-new>${icon("plus", { size: 16 })}Nova OS</button>
+            <a class="btn btn-secondary" href="/ordens?view=board">${icon("columns", { size: 16 })}${tr("Quadro da bancada")}</a>
+            <button type="button" class="btn btn-primary" data-new>${icon("plus", { size: 16 })}${tr("Nova OS")}</button>
           </div>
         </header>
 
         ${firstRun || catalogEmpty || profileEmpty
           ? html`<section class="card onboarding">
-              <div class="card-head plain"><div><h2 class="card-title">Primeiros passos</h2><p class="card-desc">Três ajustes deixam os documentos e o painel completos.</p></div></div>
+              <div class="card-head plain"><div><h2 class="card-title">${tr("Primeiros passos")}</h2><p class="card-desc">${tr("Três ajustes deixam os documentos e o painel completos.")}</p></div></div>
               <div class="onboarding-steps">
                 <a class="onboarding-step${profileEmpty ? "" : " done"}" href="/configuracoes">
                   <span class="onboarding-check">${profileEmpty ? "1" : icon("check", { size: 14 })}</span>
-                  <span><strong>Dados da oficina</strong><small>Telefone, Instagram e termos de garantia nos PDFs</small></span>
+                  <span><strong>${tr("Dados da oficina")}</strong><small>${tr("Telefone, Instagram e termos de garantia nos PDFs")}</small></span>
                 </a>
                 <a class="onboarding-step${catalogEmpty ? "" : " done"}" href="/servicos">
                   <span class="onboarding-check">${catalogEmpty ? "2" : icon("check", { size: 14 })}</span>
-                  <span><strong>Serviços e preços</strong><small>Lance itens na OS com um clique</small></span>
+                  <span><strong>${tr("Serviços e preços")}</strong><small>${tr("Lance itens na OS com um clique")}</small></span>
                 </a>
                 <button type="button" class="onboarding-step${firstRun ? "" : " done"}" data-new>
                   <span class="onboarding-check">${firstRun ? "3" : icon("check", { size: 14 })}</span>
-                  <span><strong>Primeira ordem de serviço</strong><small>Entrada do equipamento, relatório e cobrança</small></span>
+                  <span><strong>${tr("Primeira ordem de serviço")}</strong><small>${tr("Entrada do equipamento, relatório e cobrança")}</small></span>
                 </button>
               </div>
             </section>`
           : ""}
 
-        <section class="stats" aria-label="Indicadores">
+        <section class="stats" aria-label="${tr("Indicadores")}">
           ${stat({
-            label: "Faturamento do mês",
+            label: tr("Faturamento do mês"),
             icon: "banknote",
             value: money(thisMonth),
             delta: delta == null ? "" : `${delta >= 0 ? "▲" : "▼"} ${percent(Math.abs(delta))}`,
             deltaGood: delta != null && delta >= 0,
-            detail: delta == null ? "OS pagas neste mês" : " vs. mês anterior",
-            spark: sparkline(values, { label: "Faturamento dos últimos 12 meses" }),
+            detail: delta == null ? tr("OS pagas neste mês") : tr(" vs. mês anterior"),
+            spark: sparkline(values, { label: tr("Faturamento dos últimos 12 meses") }),
             href: "/ordens?pay=pago&period=mes",
           })}
           ${stat({
-            label: "A receber",
+            label: tr("A receber"),
             icon: "wallet",
             value: money(receivable),
-            detail: unpaid.length ? plural(unpaid.length, "OS com pagamento pendente", "OS com pagamento pendente") : "Nada pendente",
+            detail: unpaid.length ? plural(unpaid.length, tr("OS com pagamento pendente"), tr("OS com pagamento pendente")) : tr("Nada pendente"),
             href: "/ordens?pay=pendente",
           })}
           ${stat({
-            label: "Em aberto",
+            label: tr("Em aberto"),
             icon: "wrench",
             value: String(open.length),
-            detail: `${counts.bancada} na bancada · ${counts.pronto} pronta${counts.pronto === 1 ? "" : "s"}`,
+            detail: `${tr("{n} na bancada", { n: counts.bancada })} · ${plural(counts.pronto, tr("pronta"), tr("prontas"))}`,
             href: "/ordens?view=board",
           })}
           ${stat({
-            label: "Ganho médio de FPS",
+            label: tr("Ganho médio de FPS"),
             icon: "gauge",
             value: avgGain == null ? "—" : signed(avgGain),
-            detail: gains.length ? `em ${plural(gains.length, "medição", "medições")} (BB 0.20g)` : "Registre o FPS antes e depois",
+            detail: gains.length ? tr("em {n} (BB 0.20g)", { n: plural(gains.length, tr("medição"), tr("medições")) }) : tr("Registre o FPS antes e depois"),
             href: "/ordens",
           })}
         </section>
@@ -171,7 +172,7 @@ export function mount(el) {
         <div class="dash-grid">
           <section class="card dash-revenue">
             <header class="card-head">
-              <div><h2 class="card-title">Faturamento</h2><p class="card-desc">OS pagas nos últimos 12 meses${ticket ? ` · ticket médio ${money(ticket)} (90 dias)` : ""}</p></div>
+              <div><h2 class="card-title">${tr("Faturamento")}</h2><p class="card-desc">${tr("OS pagas nos últimos 12 meses")}${ticket ? ` · ${tr("ticket médio {v} (90 dias)", { v: money(ticket) })}` : ""}</p></div>
               <span class="card-head-value tnum">${money(values.reduce((a, b) => a + b, 0))}</span>
             </header>
             <div class="card-body">
@@ -181,21 +182,21 @@ export function mount(el) {
                 tickFormat: moneyCompact,
                 highlight: monthKey(months[months.length - 1]),
                 height: 210,
-                emptyText: "As OS pagas aparecem aqui, mês a mês.",
+                emptyText: tr("As OS pagas aparecem aqui, mês a mês."),
               })}
             </div>
           </section>
 
           <section class="card">
-            <header class="card-head"><div><h2 class="card-title">Bancada agora</h2><p class="card-desc">${plural(open.length, "ordem em aberto", "ordens em aberto")}</p></div><a class="card-link" href="/ordens?view=board">Quadro ${icon("chevronRight", { size: 13 })}</a></header>
+            <header class="card-head"><div><h2 class="card-title">${tr("Bancada agora")}</h2><p class="card-desc">${plural(open.length, tr("ordem em aberto"), tr("ordens em aberto"))}</p></div><a class="card-link" href="/ordens?view=board">${tr("Quadro")} ${icon("chevronRight", { size: 13 })}</a></header>
             <div class="card-body">
               ${barList(
                 OPEN_STATUSES.map((id) => ({ label: STATUS[id].label, value: counts[id], href: `/ordens?status=${id}`, lead: html`<span class="dot dot-${id}"></span>` })),
-                { format: (v) => String(v), empty: "Nenhuma OS em aberto. Bancada livre!" }
+                { format: (v) => String(v), empty: tr("Nenhuma OS em aberto. Bancada livre!") }
               )}
               <div class="mini-stats">
-                <a href="/ordens?status=entregue"><strong>${counts.entregue}</strong><span>entregues no total</span></a>
-                <a href="/ordens?status=abertas"><strong class="${late.length ? "danger-text" : ""}">${late.length}</strong><span>atrasada${late.length === 1 ? "" : "s"}</span></a>
+                <a href="/ordens?status=entregue"><strong>${counts.entregue}</strong><span>${tr("entregues no total")}</span></a>
+                <a href="/ordens?status=abertas"><strong class="${late.length ? "danger-text" : ""}">${late.length}</strong><span>${late.length === 1 ? tr("atrasada") : tr("atrasadas")}</span></a>
               </div>
             </div>
           </section>
@@ -203,57 +204,57 @@ export function mount(el) {
 
         <div class="dash-grid three">
           <section class="card">
-            <header class="card-head"><div><h2 class="card-title">Prontas para retirada</h2><p class="card-desc">Avise o cliente com um clique</p></div><span class="badge">${ready.length}</span></header>
+            <header class="card-head"><div><h2 class="card-title">${tr("Prontas para retirada")}</h2><p class="card-desc">${tr("Avise o cliente com um clique")}</p></div><span class="badge">${ready.length}</span></header>
             <div class="card-body flush">
               ${ready.length
                 ? html`<ul class="list">${ready.slice(0, 6).map((o) => {
                     const link = whatsappLink(o.client?.phone, whatsappMessage(o, settings, "pronto"));
                     return html`<li class="list-row">
-                      <a class="list-main" href="/ordens/${o.id}"><span class="os-number">${o.number}</span><span class="truncate"><strong>${o.client?.name || "Sem cliente"}</strong><small>${equipmentLabel(o.equipment) || "—"} · pronta ${relative(o.updatedAt)}</small></span></a>
-                      ${link ? html`<a class="btn btn-secondary btn-xs" href="${link}" target="_blank" rel="noopener" title="Avisar no WhatsApp">${icon("message", { size: 13 })}Avisar</a>` : ""}
+                      <a class="list-main" href="/ordens/${o.id}"><span class="os-number">${o.number}</span><span class="truncate"><strong>${o.client?.name || tr("Sem cliente")}</strong><small>${equipmentLabel(o.equipment) || "—"} · ${tr("pronta {when}", { when: relative(o.updatedAt) })}</small></span></a>
+                      ${link ? html`<a class="btn btn-secondary btn-xs" href="${link}" target="_blank" rel="noopener" title="${tr("Avisar no WhatsApp")}">${icon("message", { size: 13 })}${tr("Avisar")}</a>` : ""}
                     </li>`;
                   })}</ul>`
-                : html`<div class="empty compact"><p>Nenhuma OS pronta aguardando retirada.</p></div>`}
+                : html`<div class="empty compact"><p>${tr("Nenhuma OS pronta aguardando retirada.")}</p></div>`}
             </div>
           </section>
 
           <section class="card">
-            <header class="card-head"><div><h2 class="card-title">Próximas entregas</h2><p class="card-desc">Pela previsão combinada</p></div></header>
+            <header class="card-head"><div><h2 class="card-title">${tr("Próximas entregas")}</h2><p class="card-desc">${tr("Pela previsão combinada")}</p></div></header>
             <div class="card-body flush">
               ${due.length
                 ? html`<ul class="list">${due.map((o) => {
                     const days = daysBetween(todayISO(), o.dueAt);
                     return html`<li class="list-row">
-                      <a class="list-main" href="/ordens/${o.id}"><span class="os-number">${o.number}</span><span class="truncate"><strong>${o.client?.name || "Sem cliente"}</strong><small>${STATUS[o.status].label} · ${equipmentLabel(o.equipment) || "—"}</small></span></a>
-                      <span class="badge ${days < 0 ? "badge-danger" : days <= 1 ? "badge-warning" : ""}">${days < 0 ? `${-days}d atrasada` : days === 0 ? "hoje" : days === 1 ? "amanhã" : dateShort(o.dueAt)}</span>
+                      <a class="list-main" href="/ordens/${o.id}"><span class="os-number">${o.number}</span><span class="truncate"><strong>${o.client?.name || tr("Sem cliente")}</strong><small>${STATUS[o.status].label} · ${equipmentLabel(o.equipment) || "—"}</small></span></a>
+                      <span class="badge ${days < 0 ? "badge-danger" : days <= 1 ? "badge-warning" : ""}">${days < 0 ? tr("{n}d atrasada", { n: -days }) : days === 0 ? tr("hoje") : days === 1 ? tr("amanhã") : dateShort(o.dueAt)}</span>
                     </li>`;
                   })}</ul>`
-                : html`<div class="empty compact"><p>Sem previsões de entrega. Defina a data na OS para acompanhar aqui.</p></div>`}
+                : html`<div class="empty compact"><p>${tr("Sem previsões de entrega. Defina a data na OS para acompanhar aqui.")}</p></div>`}
             </div>
           </section>
 
           <section class="card">
-            <header class="card-head"><div><h2 class="card-title">Serviços mais feitos</h2><p class="card-desc">Pelos itens lançados nas OS</p></div></header>
+            <header class="card-head"><div><h2 class="card-title">${tr("Serviços mais feitos")}</h2><p class="card-desc">${tr("Pelos itens lançados nas OS")}</p></div></header>
             <div class="card-body">
               ${barList(topServices.map((s) => ({ label: s.label, value: s.value, detail: s.total ? moneyCompact(s.total) : "" })), {
                 format: (v) => `${v}×`,
-                empty: "Lance serviços e peças nas OS para ver o ranking.",
+                empty: tr("Lance serviços e peças nas OS para ver o ranking."),
               })}
             </div>
           </section>
         </div>
 
         <section class="card">
-          <header class="card-head"><div><h2 class="card-title">Atividade recente</h2><p class="card-desc">Entradas e mudanças de status em todas as OS</p></div><a class="card-link" href="/ordens">Ver ordens ${icon("chevronRight", { size: 13 })}</a></header>
+          <header class="card-head"><div><h2 class="card-title">${tr("Atividade recente")}</h2><p class="card-desc">${tr("Entradas e mudanças de status em todas as OS")}</p></div><a class="card-link" href="/ordens">${tr("Ver ordens")} ${icon("chevronRight", { size: 13 })}</a></header>
           <div class="card-body">
             ${activity.length
               ? html`<ol class="timeline">${activity.map((e) => html`<li class="timeline-item">
                   <span class="timeline-dot ${e.type === "status" ? "dot-" + e.to : ""}"></span>
-                  <div><p><a class="link-strong" href="/ordens/${e.order.id}">OS ${e.order.number}</a> · ${e.order.client?.name || "Sem cliente"} —
-                    ${e.type === "status" ? html`foi para <strong>${STATUS[e.to]?.label || e.to}</strong>` : e.type === "created" ? "entrada registrada" : e.type === "imported" ? "importada da versão anterior" : e.text || e.type}</p>
+                  <div><p><a class="link-strong" href="/ordens/${e.order.id}">${tr("OS {n}", { n: e.order.number })}</a> · ${e.order.client?.name || tr("Sem cliente")} —
+                    ${e.type === "status" ? trHtml("foi para <strong>{s}</strong>", { s: STATUS[e.to]?.label || e.to }) : e.type === "created" ? tr("entrada registrada") : e.type === "imported" ? tr("importada da versão anterior") : e.text || e.type}</p>
                   <time datetime="${e.at}">${relative(e.at)}</time></div>
                 </li>`)}</ol>`
-              : html`<p class="hint">Quando houver OS, as mudanças aparecem aqui.</p>`}
+              : html`<p class="hint">${tr("Quando houver OS, as mudanças aparecem aqui.")}</p>`}
           </div>
         </section>
       `

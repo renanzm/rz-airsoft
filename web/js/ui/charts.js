@@ -2,6 +2,7 @@
  * Barras finas (≤ 24px), ponta arredondada de 4px, grade em linha fina, um único eixo.
  */
 import { html, raw, esc } from "../core/dom.js";
+import { tr } from "../core/i18n.js";
 
 function niceStep(max, ticks = 4) {
   if (max <= 0) return 1;
@@ -15,7 +16,7 @@ function niceStep(max, ticks = 4) {
  * points: [{ key, label, value, tip }]  — `tip` é o texto completo do mês.
  * format: (value) => texto do eixo; highlight: chave da coluna destacada (rotulada no topo).
  */
-export function columnChart({ points, format, tickFormat = format, highlight = null, height = 200, emptyText = "Sem dados no período" }) {
+export function columnChart({ points, format, tickFormat = format, highlight = null, height = 200, emptyText = tr("Sem dados no período") }) {
   const max = Math.max(0, ...points.map((p) => p.value));
   if (!points.length || max <= 0) {
     return html`<div class="chart-empty" style="height:${height}px"><span>${emptyText}</span></div>`;
@@ -119,7 +120,7 @@ export function sparkline(values, { width = 76, height = 26, label = "" } = {}) 
 }
 
 /** Lista de barras horizontais (uma cor só: o rótulo identifica cada linha). */
-export function barList(rows, { format = (v) => String(v), empty = "Nada para mostrar" } = {}) {
+export function barList(rows, { format = (v) => String(v), empty = tr("Nada para mostrar") } = {}) {
   const max = Math.max(0, ...rows.map((r) => r.value));
   if (!rows.length || max <= 0) return html`<p class="hint">${empty}</p>`;
   return html`<ul class="barlist">

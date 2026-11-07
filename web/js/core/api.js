@@ -1,4 +1,5 @@
 /* Cliente da API v1. Erros viram ApiError com status e código estáveis. */
+import { tr, trValue } from "./i18n.js";
 
 export class ApiError extends Error {
   constructor(status, code, body = null, message = "") {
@@ -44,7 +45,7 @@ export async function api(method, path, { json, body, headers = {}, signal, keep
   } catch (error) {
     clearTimeout(timer);
     if (signal?.aborted) throw error;
-    throw new ApiError(0, error?.name === "TimeoutError" || error?.name === "AbortError" ? "timeout" : "network", null, "Sem conexão com o servidor");
+    throw new ApiError(0, error?.name === "TimeoutError" || error?.name === "AbortError" ? "timeout" : "network", null, tr("Sem conexão com o servidor"));
   }
   clearTimeout(timer);
   if (raw && res.ok) return res;
@@ -59,7 +60,7 @@ export async function api(method, path, { json, body, headers = {}, signal, keep
   }
   if (res.status === 401 && !path.startsWith("/auth/") && path !== "/session") {
     unauthorizedHandler();
-    throw new ApiError(401, "auth", data, "Sessão expirada");
+    throw new ApiError(401, "auth", data, tr("Sessão expirada"));
   }
   if (!res.ok) {
     throw new ApiError(res.status, data?.error || `http-${res.status}`, data, data?.message || "");
@@ -76,11 +77,11 @@ export function fileUrl(id) {
 
 /** Mensagem amigável para mostrar em toast. */
 export function describeError(error) {
-  if (!(error instanceof ApiError)) return error?.message || "Algo deu errado.";
-  if (error.status === 0) return "Sem conexão com o servidor. Verifique se a janela do RZ Airsoft está aberta.";
-  if (error.status === 413) return "O conteúdo é grande demais para salvar.";
-  if (error.status === 415) return "Formato de arquivo não aceito.";
-  if (error.status === 403 && error.code === "origin") return "Requisição bloqueada por segurança. Recarregue a página.";
-  if (error.status >= 500) return "O servidor encontrou um erro. Tente novamente.";
-  return error.message || "Não foi possível concluir a ação.";
+  if (!(error instanceof ApiError)) return error?.message || tr("Algo deu errado.");
+  if (error.status === 0) return tr("Sem conexão com o servidor. Verifique se a janela do RZ Airsoft está aberta.");
+  if (error.status === 413) return tr("O conteúdo é grande demais para salvar.");
+  if (error.status === 415) return tr("Formato de arquivo não aceito.");
+  if (error.status === 403 && error.code === "origin") return tr("Requisição bloqueada por segurança. Recarregue a página.");
+  if (error.status >= 500) return tr("O servidor encontrou um erro. Tente novamente.");
+  return trValue(error.message) || tr("Não foi possível concluir a ação.");
 }

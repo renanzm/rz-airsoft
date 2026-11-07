@@ -1,6 +1,7 @@
 /* Geração de PDF (html2canvas + jsPDF, locais) e impressão em iframe. */
 import { loadScript, downloadBlob, sleep } from "../core/util.js";
 import { toast } from "../ui/toast.js";
+import { tr, locale } from "../core/i18n.js";
 
 const PAGE = {
   landscape: { w: 1122, h: 793, mm: [297, 210] },
@@ -9,7 +10,7 @@ const PAGE = {
 
 async function libs() {
   await Promise.all([loadScript("/vendor/html2canvas.min.js"), loadScript("/vendor/jspdf.umd.min.js")]);
-  if (!window.html2canvas || !window.jspdf?.jsPDF) throw new Error("As bibliotecas de PDF não carregaram.");
+  if (!window.html2canvas || !window.jspdf?.jsPDF) throw new Error(tr("As bibliotecas de PDF não carregaram."));
 }
 
 async function fontsReady() {
@@ -61,7 +62,7 @@ export function stage(html) {
  * pages: string HTML com um ou mais .doc-page (landscape|portrait).
  */
 export async function savePdf(html, { filename, orientation = "landscape", title = "", fitHeight = false, background = "#ffffff", build } = {}) {
-  const progress = toast.loading("Gerando PDF…");
+  const progress = toast.loading(tr("Gerando PDF…"));
   const s = stage(html);
   try {
     await libs();
@@ -71,10 +72,10 @@ export async function savePdf(html, { filename, orientation = "landscape", title
     await imagesReady(s.el);
     const size = PAGE[orientation];
     const pdf = new window.jspdf.jsPDF({ orientation, unit: "mm", format: "a4", compress: true });
-    pdf.setProperties({ title: title || filename, author: "RZ Airsoft", creator: "RZ Airsoft — gestão da oficina" });
+    pdf.setProperties({ title: title || filename, author: "RZ Airsoft", creator: tr("RZ Airsoft — gestão da oficina") });
     for (let i = 0; i < pages.length; i += 1) {
       const page = pages[i];
-      if (pages.length > 1) progress.update(`Gerando PDF… página ${i + 1} de ${pages.length}`, "loading");
+      if (pages.length > 1) progress.update(tr("Gerando PDF… página {page} de {pages}", { page: i + 1, pages: pages.length }), "loading");
       const width = page.offsetWidth;
       const height = page.offsetHeight;
       const canvas = await window.html2canvas(page, {
@@ -113,17 +114,17 @@ export async function savePdf(html, { filename, orientation = "landscape", title
     }
     const blob = pdf.output("blob");
     downloadBlob(blob, filename);
-    progress.update("PDF baixado", "success", filename);
+    progress.update(tr("PDF baixado"), "success", filename);
   } catch (error) {
     console.error(error);
-    progress.update("Não foi possível gerar o PDF", "error", error?.message || "");
+    progress.update(tr("Não foi possível gerar o PDF"), "error", error?.message || "");
   } finally {
     s.cleanup();
   }
 }
 
 /** Abre a impressão do navegador só com o documento (qualidade vetorial). */
-export async function printHtml(html, { orientation = "landscape", title = "Documento", build, fit = false } = {}) {
+export async function printHtml(html, { orientation = "landscape", title = tr("Documento"), build, fit = false } = {}) {
   const frame = document.createElement("iframe");
   frame.className = "print-frame";
   frame.setAttribute("aria-hidden", "true");
@@ -132,7 +133,7 @@ export async function printHtml(html, { orientation = "landscape", title = "Docu
   const doc = frame.contentDocument;
   const fonts = document.querySelector('link[href*="fonts.googleapis.com"]')?.href || "";
   doc.open();
-  doc.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${title.replace(/</g, "")}</title>
+  doc.write(`<!doctype html><html lang="${locale()}"><head><meta charset="utf-8"><title>${title.replace(/</g, "")}</title>
     ${fonts ? `<link rel="stylesheet" href="${fonts}">` : ""}
     <link rel="stylesheet" href="/css/documents.css">
     <style>@page{size:A4 ${orientation};margin:0}html,body{margin:0;padding:0;background:#fff}</style>
@@ -197,6 +198,6 @@ export function paginate(root) {
   }
   const pages = Array.from(root.querySelectorAll(".doc-page[data-paginate]"));
   pages.forEach((p, i) => {
-    p.querySelectorAll("[data-page-num]").forEach((el) => (el.textContent = `Página ${i + 1} de ${pages.length}`));
+    p.querySelectorAll("[data-page-num]").forEach((el) => (el.textContent = tr("Página {page} de {pages}", { page: i + 1, pages: pages.length })));
   });
 }

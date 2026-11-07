@@ -177,6 +177,12 @@ body.auth::before {
   font-size: 12.5px;
 }
 
+.auth-lang {
+  display: flex;
+  width: fit-content;
+  margin: 12px auto 0;
+}
+
 .auth-note {
   margin-top: 16px;
   color: var(--text-3);

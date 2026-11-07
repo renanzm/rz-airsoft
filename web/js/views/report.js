@@ -12,11 +12,12 @@ import { confirm } from "../ui/dialog.js";
 import { reportHtml, fpsNote } from "../docs/report-doc.js";
 import { exportReport } from "../docs/report-doc.js";
 import { prepareImage } from "./images.js";
+import { tr } from "../core/i18n.js";
 
 const MAX_PHOTOS = 6;
 const SUGGESTIONS = {
-  diagnosis: ["Baixo FPS", "Nozzle quebrado", "Vazamento de ar no cilindro", "Engrenagens com desgaste", "Mola cansada", "Contatos do gatilho oxidados", "Hop-up desregulado", "Bucking ressecado"],
-  services: ["Limpeza e lubrificação da gearbox", "Troca de nozzle", "Troca de mola", "Calço das engrenagens (shimming)", "Ajuste de AOE", "Troca de bucking", "Limpeza do cano", "Troca de conector para T-Dean", "Instalação de MOSFET"],
+  diagnosis: [tr("Baixo FPS"), tr("Nozzle quebrado"), tr("Vazamento de ar no cilindro"), tr("Engrenagens com desgaste"), tr("Mola cansada"), tr("Contatos do gatilho oxidados"), tr("Hop-up desregulado"), tr("Bucking ressecado")],
+  services: [tr("Limpeza e lubrificação da gearbox"), tr("Troca de nozzle"), tr("Troca de mola"), tr("Calço das engrenagens (shimming)"), tr("Ajuste de AOE"), tr("Troca de bucking"), tr("Limpeza do cano"), tr("Troca de conector para T-Dean"), tr("Instalação de MOSFET")],
 };
 
 export function mountReport(el, { getOrder, commit }) {
@@ -26,15 +27,15 @@ export function mountReport(el, { getOrder, commit }) {
 
   el.innerHTML = String(html`<div class="report-editor${previewOpen ? "" : " no-preview"}" data-editor>
     <div class="report-form" data-form></div>
-    <aside class="report-preview" aria-label="Prévia do relatório">
+    <aside class="report-preview" aria-label="${tr("Prévia do relatório")}">
       <div class="preview-bar">
-        <span class="preview-title">${icon("eye", { size: 15 })}Prévia do PDF</span>
+        <span class="preview-title">${icon("eye", { size: 15 })}${tr("Prévia do PDF")}</span>
         <span class="spacer"></span>
-        <button type="button" class="btn btn-ghost btn-sm" data-act="print">${icon("printer", { size: 15 })}Imprimir</button>
-        <button type="button" class="btn btn-primary btn-sm" data-act="pdf">${icon("download", { size: 15 })}Baixar PDF</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-act="print">${icon("printer", { size: 15 })}${tr("Imprimir")}</button>
+        <button type="button" class="btn btn-primary btn-sm" data-act="pdf">${icon("download", { size: 15 })}${tr("Baixar PDF")}</button>
       </div>
       <div class="preview-viewport" data-viewport><div class="preview-scale" data-scale><div class="preview-doc" data-doc></div></div></div>
-      <p class="hint preview-hint">A prévia usa as mesmas medidas do PDF (A4 paisagem). Fotos e textos longos se ajustam ao gerar.</p>
+      <p class="hint preview-hint">${tr("A prévia usa as mesmas medidas do PDF (A4 paisagem). Fotos e textos longos se ajustam ao gerar.")}</p>
     </aside>
   </div>`);
   const formEl = el.querySelector("[data-form]");
@@ -54,20 +55,20 @@ export function mountReport(el, { getOrder, commit }) {
     const items = rows.length ? rows : [""];
     return html`<section class="card" data-list="${kind}">
       <header class="card-head"><div><h2 class="card-title"><span class="step-num">${number}</span>${title}</h2></div>
-        <button type="button" class="btn btn-ghost btn-sm card-head-action" data-suggest="${kind}" aria-haspopup="menu">${icon("sparkle", { size: 14 })}Sugestões</button>
+        <button type="button" class="btn btn-ghost btn-sm card-head-action" data-suggest="${kind}" aria-haspopup="menu">${icon("sparkle", { size: 14 })}${tr("Sugestões")}</button>
       </header>
       <div class="card-body">
         <ul class="line-list">
           ${items.map((value, index) => html`<li class="line-item" data-key="${kind}-${index}">
             <span class="line-bullet${kind === "services" ? " check" : ""}">${kind === "services" ? "✓" : "►"}</span>
-            <input class="input" data-line="${kind}" data-index="${index}" value="${value}" placeholder="${index === 0 ? placeholder : ""}" aria-label="${title} — linha ${index + 1}" />
-            <button type="button" class="btn btn-ghost btn-icon btn-sm" data-remove-line="${kind}" data-index="${index}" aria-label="Remover linha" ${items.length === 1 && !value ? "disabled" : ""}>${icon("x", { size: 14 })}</button>
+            <input class="input" data-line="${kind}" data-index="${index}" value="${value}" placeholder="${index === 0 ? placeholder : ""}" aria-label="${tr("{title} — linha {n}", { title, n: index + 1 })}" />
+            <button type="button" class="btn btn-ghost btn-icon btn-sm" data-remove-line="${kind}" data-index="${index}" aria-label="${tr("Remover linha")}" ${items.length === 1 && !value ? "disabled" : ""}>${icon("x", { size: 14 })}</button>
           </li>`)}
         </ul>
         <div class="row mt-sm">
-          <button type="button" class="btn btn-ghost btn-sm" data-add-line="${kind}">${icon("plus", { size: 14 })}Adicionar linha</button>
-          ${kind === "services" && order().items.length ? html`<button type="button" class="btn btn-ghost btn-sm" data-import-items>${icon("download", { size: 14 })}Trazer itens da OS</button>` : ""}
-          <span class="hint spacer-left">Enter cria a próxima linha</span>
+          <button type="button" class="btn btn-ghost btn-sm" data-add-line="${kind}">${icon("plus", { size: 14 })}${tr("Adicionar linha")}</button>
+          ${kind === "services" && order().items.length ? html`<button type="button" class="btn btn-ghost btn-sm" data-import-items>${icon("download", { size: 14 })}${tr("Trazer itens da OS")}</button>` : ""}
+          <span class="hint spacer-left">${tr("Enter cria a próxima linha")}</span>
         </div>
       </div>
     </section>`;
@@ -76,18 +77,18 @@ export function mountReport(el, { getOrder, commit }) {
   function photosCard() {
     const photos = order().report.photos;
     return html`<section class="card">
-      <header class="card-head"><div><h2 class="card-title"><span class="step-num">5</span>Registro fotográfico</h2><p class="card-desc">Componentes originais, antes da manutenção. Até ${MAX_PHOTOS} fotos; o layout do PDF se ajusta à quantidade.</p></div>
+      <header class="card-head"><div><h2 class="card-title"><span class="step-num">5</span>${tr("Registro fotográfico")}</h2><p class="card-desc">${tr("Componentes originais, antes da manutenção. Até {n} fotos; o layout do PDF se ajusta à quantidade.", { n: MAX_PHOTOS })}</p></div>
         <span class="badge">${photos.length}/${MAX_PHOTOS}</span></header>
       <div class="card-body stack">
         ${photos.length
           ? html`<div class="photo-strip">${photos.map(
               (id, index) => html`<figure class="photo-thumb" data-key="${id}">
-                <img src="${fileUrl(id)}" alt="Foto ${index + 1}" loading="lazy" />
+                <img src="${fileUrl(id)}" alt="${tr("Foto {n}", { n: index + 1 })}" loading="lazy" />
                 <figcaption>
-                  <button type="button" class="btn btn-secondary btn-icon btn-xs" data-move-photo="-1" data-index="${index}" aria-label="Mover para a esquerda" ${index === 0 ? "disabled" : ""}>${icon("chevronLeft", { size: 13 })}</button>
+                  <button type="button" class="btn btn-secondary btn-icon btn-xs" data-move-photo="-1" data-index="${index}" aria-label="${tr("Mover para a esquerda")}" ${index === 0 ? "disabled" : ""}>${icon("chevronLeft", { size: 13 })}</button>
                   <span>${index + 1}</span>
-                  <button type="button" class="btn btn-secondary btn-icon btn-xs" data-move-photo="1" data-index="${index}" aria-label="Mover para a direita" ${index === photos.length - 1 ? "disabled" : ""}>${icon("chevronRight", { size: 13 })}</button>
-                  <button type="button" class="btn btn-danger-ghost btn-icon btn-xs" data-remove-photo="${index}" aria-label="Remover foto ${index + 1}">${icon("trash", { size: 13 })}</button>
+                  <button type="button" class="btn btn-secondary btn-icon btn-xs" data-move-photo="1" data-index="${index}" aria-label="${tr("Mover para a direita")}" ${index === photos.length - 1 ? "disabled" : ""}>${icon("chevronRight", { size: 13 })}</button>
+                  <button type="button" class="btn btn-danger-ghost btn-icon btn-xs" data-remove-photo="${index}" aria-label="${tr("Remover foto {n}", { n: index + 1 })}">${icon("trash", { size: 13 })}</button>
                 </figcaption>
               </figure>`
             )}</div>`
@@ -95,7 +96,7 @@ export function mountReport(el, { getOrder, commit }) {
         ${photos.length < MAX_PHOTOS
           ? html`<label class="dropzone" data-drop>
               <input type="file" accept="image/*" multiple hidden data-photo-input />
-              ${uploads ? html`${icon("loader", { size: 22, className: "spin" })}<strong>Enviando ${uploads} foto${uploads > 1 ? "s" : ""}…</strong>` : html`${icon("camera", { size: 22 })}<strong>Adicionar fotos</strong><span class="hint">Arraste aqui ou clique. No celular, abre a câmera. As fotos são reduzidas antes do envio.</span>`}
+              ${uploads ? html`${icon("loader", { size: 22, className: "spin" })}<strong>${uploads > 1 ? tr("Enviando {n} fotos…", { n: uploads }) : tr("Enviando {n} foto…", { n: uploads })}</strong>` : html`${icon("camera", { size: 22 })}<strong>${tr("Adicionar fotos")}</strong><span class="hint">${tr("Arraste aqui ou clique. No celular, abre a câmera. As fotos são reduzidas antes do envio.")}</span>`}
             </label>`
           : ""}
       </div>
@@ -109,48 +110,48 @@ export function mountReport(el, { getOrder, commit }) {
     const gain = fpsGain(o);
     return html`
       <section class="card">
-        <header class="card-head"><div><h2 class="card-title">Cabeçalho</h2><p class="card-desc">OS ${o.number || "—"} · ${o.client?.name || "sem cliente"}. Esses dados vêm da OS.</p></div></header>
+        <header class="card-head"><div><h2 class="card-title">${tr("Cabeçalho")}</h2><p class="card-desc">${tr("OS {n} · {client}. Esses dados vêm da OS.", { n: o.number || "—", client: o.client?.name || tr("sem cliente") })}</p></div></header>
         <div class="card-body">
           <div class="form-grid cols-2">
-            <label class="field"><span class="label">Data do relatório</span><input class="input" type="date" data-r="date" value="${r.date || o.deliveredAt || o.receivedAt}" /></label>
-            <label class="field"><span class="label">Armeiro responsável</span><input class="input" data-r="technician" value="${r.technician || o.technician || settings.orders.technician}" placeholder="Seu nome" /></label>
+            <label class="field"><span class="label">${tr("Data do relatório")}</span><input class="input" type="date" data-r="date" value="${r.date || o.deliveredAt || o.receivedAt}" /></label>
+            <label class="field"><span class="label">${tr("Armeiro responsável")}</span><input class="input" data-r="technician" value="${r.technician || o.technician || settings.orders.technician}" placeholder="${tr("Seu nome")}" /></label>
           </div>
         </div>
       </section>
 
       <section class="card">
-        <header class="card-head"><div><h2 class="card-title"><span class="step-num">1</span>Identificação do equipamento</h2><p class="card-desc">${equipmentLabel(o.equipment) || "Modelo não informado na OS"}</p></div></header>
+        <header class="card-head"><div><h2 class="card-title"><span class="step-num">1</span>${tr("Identificação do equipamento")}</h2><p class="card-desc">${equipmentLabel(o.equipment) || tr("Modelo não informado na OS")}</p></div></header>
         <div class="card-body">
           <div class="form-grid cols-2">
-            <label class="field"><span class="label">Modelo</span><input class="input" data-o="equipment.model" value="${o.equipment.model}" placeholder="M4, AK…" /></label>
-            <label class="field"><span class="label">Fabricante</span><input class="input" data-o="equipment.brand" value="${o.equipment.brand}" placeholder="G&G, Cyma…" /></label>
+            <label class="field"><span class="label">${tr("Modelo")}</span><input class="input" data-o="equipment.model" value="${o.equipment.model}" placeholder="M4, AK…" /></label>
+            <label class="field"><span class="label">${tr("Fabricante")}</span><input class="input" data-o="equipment.brand" value="${o.equipment.brand}" placeholder="G&G, Cyma…" /></label>
             ${REPORT_FIELDS.map((f) => html`<label class="field"><span class="label">${icon(f.icon, { size: 13 })}${f.label}</span><input class="input" data-r="${f.key}" value="${r[f.key]}" /></label>`)}
           </div>
         </div>
       </section>
 
       <section class="card">
-        <header class="card-head"><div><h2 class="card-title"><span class="step-num">2</span>Desempenho</h2><p class="card-desc">FPS com BB 0.20g. As medições com 0.28g e 0.32g da OS entram como nota.</p></div>
+        <header class="card-head"><div><h2 class="card-title"><span class="step-num">2</span>${tr("Desempenho")}</h2><p class="card-desc">${tr("FPS com BB 0.20g. As medições com 0.28g e 0.32g da OS entram como nota.")}</p></div>
           ${gain != null ? html`<span class="gain-pill ${gain >= 0 ? "up" : "down"}">${signed(gain, " FPS")}</span>` : ""}</header>
         <div class="card-body stack">
           <div class="form-grid cols-2">
-            <label class="field"><span class="label">FPS antes (0.20g)</span><input class="input input-number" data-fps="before" inputmode="decimal" value="${o.fps.before.g20 ?? ""}" placeholder="—" /></label>
-            <label class="field"><span class="label">FPS depois (0.20g)</span><input class="input input-number" data-fps="after" inputmode="decimal" value="${o.fps.after.g20 ?? ""}" placeholder="—" /></label>
-            <label class="field"><span class="label">Nota abaixo do “antes”</span><input class="input" data-r="fpsBeforeNote" value="${r.fpsBeforeNote}" placeholder="${fpsNote(o.fps.before) || "Opcional"}" /></label>
-            <label class="field"><span class="label">Nota abaixo do “depois”</span><input class="input" data-r="fpsAfterNote" value="${r.fpsAfterNote}" placeholder="${fpsNote(o.fps.after) || "Opcional"}" /></label>
+            <label class="field"><span class="label">${tr("FPS antes (0.20g)")}</span><input class="input input-number" data-fps="before" inputmode="decimal" value="${o.fps.before.g20 ?? ""}" placeholder="—" /></label>
+            <label class="field"><span class="label">${tr("FPS depois (0.20g)")}</span><input class="input input-number" data-fps="after" inputmode="decimal" value="${o.fps.after.g20 ?? ""}" placeholder="—" /></label>
+            <label class="field"><span class="label">${tr("Nota abaixo do “antes”")}</span><input class="input" data-r="fpsBeforeNote" value="${r.fpsBeforeNote}" placeholder="${fpsNote(o.fps.before) || tr("Opcional")}" /></label>
+            <label class="field"><span class="label">${tr("Nota abaixo do “depois”")}</span><input class="input" data-r="fpsAfterNote" value="${r.fpsAfterNote}" placeholder="${fpsNote(o.fps.after) || tr("Opcional")}" /></label>
           </div>
-          <label class="field"><span class="label">Nota do ganho</span><input class="input" data-r="gainNote" value="${r.gainNote}" placeholder="Ex.: dentro do limite do campo" /></label>
-          <label class="field"><span class="label">Observação</span><textarea class="textarea" rows="2" data-r="observation" placeholder="Algo que o cliente precisa saber sobre o desempenho">${r.observation}</textarea></label>
+          <label class="field"><span class="label">${tr("Nota do ganho")}</span><input class="input" data-r="gainNote" value="${r.gainNote}" placeholder="${tr("Ex.: dentro do limite do campo")}" /></label>
+          <label class="field"><span class="label">${tr("Observação")}</span><textarea class="textarea" rows="2" data-r="observation" placeholder="${tr("Algo que o cliente precisa saber sobre o desempenho")}">${r.observation}</textarea></label>
         </div>
       </section>
 
-      ${listEditor("diagnosis", "Diagnóstico inicial", 3, "O que foi encontrado ao abrir o equipamento")}
-      ${listEditor("services", "Serviços realizados", 4, "O que foi feito")}
+      ${listEditor("diagnosis", tr("Diagnóstico inicial"), 3, tr("O que foi encontrado ao abrir o equipamento"))}
+      ${listEditor("services", tr("Serviços realizados"), 4, tr("O que foi feito"))}
       ${photosCard()}
 
       <section class="card">
-        <header class="card-head"><div><h2 class="card-title"><span class="step-num">6</span>Parecer técnico</h2><p class="card-desc">Conclusão, recomendações e cuidados de uso.</p></div></header>
-        <div class="card-body"><textarea class="textarea" rows="4" data-r="opinion" placeholder="Equipamento revisado e testado. Recomenda-se…">${r.opinion}</textarea></div>
+        <header class="card-head"><div><h2 class="card-title"><span class="step-num">6</span>${tr("Parecer técnico")}</h2><p class="card-desc">${tr("Conclusão, recomendações e cuidados de uso.")}</p></div></header>
+        <div class="card-body"><textarea class="textarea" rows="4" data-r="opinion" placeholder="${tr("Equipamento revisado e testado. Recomenda-se…")}">${r.opinion}</textarea></div>
       </section>
     `;
   }
@@ -198,11 +199,11 @@ export function mountReport(el, { getOrder, commit }) {
     if (!list.length) return;
     const room = MAX_PHOTOS - order().report.photos.length;
     if (room <= 0) {
-      toast.error(`Máximo de ${MAX_PHOTOS} fotos por relatório`);
+      toast.error(tr("Máximo de {n} fotos por relatório", { n: MAX_PHOTOS }));
       return;
     }
     const chosen = list.slice(0, room);
-    if (list.length > room) toast.info(`Só cabem mais ${room} foto${room > 1 ? "s" : ""}`, { description: "As demais foram ignoradas." });
+    if (list.length > room) toast.info(room > 1 ? tr("Só cabem mais {n} fotos", { n: room }) : tr("Só cabe mais {n} foto", { n: room }), { description: tr("As demais foram ignoradas.") });
     uploads += chosen.length;
     paint();
     for (const file of chosen) {
@@ -213,7 +214,7 @@ export function mountReport(el, { getOrder, commit }) {
         if (current.length < MAX_PHOTOS) update({ photos: [...current, doc.id] }, { debounce: 0 });
       } catch (error) {
         console.error(error);
-        toast.error(`Não foi possível enviar ${file.name}`, { description: error?.message || "" });
+        toast.error(tr("Não foi possível enviar {name}", { name: file.name }), { description: error?.message || "" });
       } finally {
         uploads -= 1;
         paint();
@@ -224,7 +225,7 @@ export function mountReport(el, { getOrder, commit }) {
   async function removePhoto(index) {
     const photos = [...order().report.photos];
     const [id] = photos.splice(index, 1);
-    const ok = await confirm({ title: "Remover esta foto?", message: "Ela sai do relatório e é apagada do servidor.", confirmLabel: "Remover", danger: true });
+    const ok = await confirm({ title: tr("Remover esta foto?"), message: tr("Ela sai do relatório e é apagada do servidor."), confirmLabel: tr("Remover"), danger: true });
     if (!ok) return;
     update({ photos }, { debounce: 0 });
     store.deleteFile(id);
@@ -292,11 +293,11 @@ export function mountReport(el, { getOrder, commit }) {
       const current = lines("services").filter((x) => x.trim());
       const fromItems = order().items.map((i) => i.description.trim()).filter(Boolean).filter((d) => !current.includes(d));
       if (!fromItems.length) {
-        toast.info("Os itens da OS já estão na lista");
+        toast.info(tr("Os itens da OS já estão na lista"));
         return;
       }
       setLines("services", [...current, ...fromItems], { debounce: 0 });
-      toast.success(`${fromItems.length} ${fromItems.length > 1 ? "itens trazidos" : "item trazido"} da OS`);
+      toast.success(fromItems.length > 1 ? tr("{n} itens trazidos da OS", { n: fromItems.length }) : tr("{n} item trazido da OS", { n: fromItems.length }));
     }),
     on(formEl, "click", "[data-suggest]", async (event, btn) => {
       const kind = btn.dataset.suggest;
@@ -312,7 +313,7 @@ export function mountReport(el, { getOrder, commit }) {
             setLines(kind, now.includes(text) ? now.filter((x) => x !== text) : [...now, text], { debounce: 0 });
           },
         })),
-        { align: "end", minWidth: 280, label: "Sugestões" }
+        { align: "end", minWidth: 280, label: tr("Sugestões") }
       );
     }),
     on(formEl, "change", "[data-photo-input]", (event, input) => {

@@ -5,6 +5,7 @@
  * chamam onQuery em vez de remontar a tela.
  */
 import { prefersReducedMotion } from "./dom.js";
+import { tr } from "./i18n.js";
 
 const routes = [];
 const scrollMemory = new Map();
@@ -93,7 +94,7 @@ async function resolve({ push = false, pop = false } = {}) {
     module = await found.route.loader();
   } catch (error) {
     console.error(error);
-    outlet.innerHTML = '<div class="page"><div class="empty"><h2>Não foi possível abrir esta tela</h2><p>Recarregue a página.</p></div></div>';
+    outlet.innerHTML = `<div class="page"><div class="empty"><h2>${tr("Não foi possível abrir esta tela")}</h2><p>${tr("Recarregue a página.")}</p></div></div>`;
     return;
   }
   if (mine !== token) return;
@@ -111,7 +112,7 @@ async function resolve({ push = false, pop = false } = {}) {
       view = module.mount(outlet, ctx) || null;
     } catch (error) {
       console.error(error);
-      outlet.innerHTML = '<div class="page"><div class="empty"><h2>Esta tela encontrou um erro</h2><p>Recarregue a página. Se continuar, veja o console.</p></div></div>';
+      outlet.innerHTML = `<div class="page"><div class="empty"><h2>${tr("Esta tela encontrou um erro")}</h2><p>${tr("Recarregue a página. Se continuar, veja o console.")}</p></div></div>`;
     }
     current = { route: found.route, params: found.params, view };
     if (pop) window.scrollTo(0, scrollMemory.get(history.state?.key ?? "start") || 0);

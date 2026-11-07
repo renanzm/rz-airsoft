@@ -12,6 +12,7 @@ import { parseBrDate, parseMoney, parseNumber, todayISO, plural } from "../core/
 import { uid, fold } from "../core/util.js";
 import { emptyReport, newClient, newOrder, nextOrderNumber, normalizeOrder, settingsWithDefaults, STATUS } from "../core/model.js";
 import { dataUrlToBlob } from "../views/images.js";
+import { tr } from "../core/i18n.js";
 
 const KEYS = {
   controle: "rz-controle-manutencao",
@@ -25,17 +26,17 @@ const KEYS = {
 
 const SEED_CATALOG = {
   meta: {
-    title: "Serviços e preços",
-    subtitle: "Catálogo de serviços",
-    intro: "Manutenção, diagnóstico e melhorias para seu equipamento de airsoft.",
+    title: tr("Serviços e preços"),
+    subtitle: tr("Catálogo de serviços"),
+    intro: tr("Manutenção, diagnóstico e melhorias para seu equipamento de airsoft."),
     contact: "(48) 99669-8376",
-    note: "Valores e condições podem ser ajustados conforme o serviço.",
-    footer: "Precisão • Desempenho • Confiança",
+    note: tr("Valores e condições podem ser ajustados conforme o serviço."),
+    footer: tr("Precisão • Desempenho • Confiança"),
   },
   categories: [
-    { name: "Manutenção e revisão", items: [["Revisão completa", "Sistema interno e externo, hop-up e cano"], ["Manutenção em AEG", ""]] },
-    { name: "Peças, conectores e upgrades", items: [["Troca de peças", ""], ["Consultoria", "Sobre peças e upgrades", "Consulta"], ["Troca de conector XT60", ""], ["Troca de conector T-Deans", ""]] },
-    { name: "Carregadores GBB", items: [["Resolução de vazamentos em carregadores GBB", ""]] },
+    { name: tr("Manutenção e revisão"), items: [[tr("Revisão completa"), tr("Sistema interno e externo, hop-up e cano")], [tr("Manutenção em AEG"), ""]] },
+    { name: tr("Peças, conectores e upgrades"), items: [[tr("Troca de peças"), ""], [tr("Consultoria"), tr("Sobre peças e upgrades"), "Consulta"], [tr("Troca de conector XT60"), ""], [tr("Troca de conector T-Deans"), ""]] },
+    { name: tr("Carregadores GBB"), items: [[tr("Resolução de vazamentos em carregadores GBB"), ""]] },
   ],
 };
 
@@ -175,7 +176,7 @@ function orderFromRecord(record, statusById, settings) {
   const explicit = STATUS[statusById[record.id]] ? statusById[record.id] : null;
   const status = explicit || (text(record.fps20s) || price ? "entregue" : "fila");
   const received = parseBrDate(record.data) || "";
-  const description = text(record.pecas) || (price ? "Serviço" : "");
+  const description = text(record.pecas) || (price ? tr("Serviço") : "");
   return normalizeOrder(
     newOrder(settings, {
       id,
@@ -236,7 +237,7 @@ function catalogFromLegacy(source) {
   return {
     id: "main",
     meta: {
-      title: text(meta.title) || "Serviços e preços",
+      title: text(meta.title) || tr("Serviços e preços"),
       subtitle: text(meta.subtitle),
       intro: text(meta.intro),
       contact: text(meta.contact),
@@ -408,15 +409,15 @@ async function apply(src, { useSeeds }) {
   return counters;
 }
 
-function summarize(c) {
+export function summarize(c) {
   const parts = [];
-  if (c.orders) parts.push(plural(c.orders, "OS", "OS"));
-  if (c.reports) parts.push(plural(c.reports, "relatório", "relatórios"));
-  if (c.clients) parts.push(plural(c.clients, "cliente", "clientes"));
-  if (c.photos) parts.push(plural(c.photos, "foto", "fotos"));
-  if (c.catalog) parts.push("catálogo de serviços");
+  if (c.orders) parts.push(plural(c.orders, tr("OS"), tr("OS")));
+  if (c.reports) parts.push(plural(c.reports, tr("relatório"), tr("relatórios")));
+  if (c.clients) parts.push(plural(c.clients, tr("cliente"), tr("clientes")));
+  if (c.photos) parts.push(plural(c.photos, tr("foto"), tr("fotos")));
+  if (c.catalog) parts.push(tr("catálogo de serviços"));
   let text = parts.join(" · ");
-  if (c.photoErrors) text += ` · ${c.photoErrors} foto(s) não puderam ser convertidas`;
+  if (c.photoErrors) text += ` · ${tr("{n} foto(s) não puderam ser convertidas", { n: c.photoErrors })}`;
   return text;
 }
 
@@ -463,7 +464,7 @@ export async function importLegacyFiles(files) {
     try {
       json = JSON.parse(await file.text());
     } catch {
-      throw new Error(`${file.name} não é um JSON válido.`);
+      throw new Error(tr("{name} não é um JSON válido.", { name: file.name }));
     }
     if (Array.isArray(json) && json.some((r) => r && ("dono" in r || "pecas" in r || "fps20e" in r))) src.records.push(...json);
     else if (Array.isArray(json) && json.some((r) => r && r.data && (r.data.fields || r.data.lists))) src.reports.push(...json);
@@ -471,9 +472,9 @@ export async function importLegacyFiles(files) {
     else if (json && json.fields && json.lists) src.reports.push({ id: json.id, os: json.fields.os, createdAt: json.savedAt, updatedAt: json.savedAt, data: json });
     else if (json && Array.isArray(json.categories)) src.catalog = json;
     else if (json && Array.isArray(json.clients)) src.clients.push(...json.clients);
-    else throw new Error(`Não reconheci o formato de ${file.name}.`);
+    else throw new Error(tr("Não reconheci o formato de {name}.", { name: file.name }));
   }
   const counters = await apply(src, { useSeeds: false });
-  const summary = summarize(counters) || "Tudo já estava no sistema.";
+  const summary = summarize(counters) || tr("Tudo já estava no sistema.");
   return { imported: counters.orders + counters.clients + counters.reports > 0 || counters.catalog, summary };
 }

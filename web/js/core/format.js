@@ -1,17 +1,19 @@
-/* Formatação pt-BR: dinheiro em centavos, datas ISO, telefone, FPS. */
+/* Formatação no idioma da interface: dinheiro em centavos (sempre em reais), datas ISO, telefone, FPS. */
+import { tr, locale } from "./i18n.js";
 
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const BRL_COMPACT = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 });
-const NUM = new Intl.NumberFormat("pt-BR");
-const NUM1 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
-const NUM2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const DATE = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-const DATE_SHORT = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
-const DATE_LONG = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric" });
-const DATETIME = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
-const MONTH = new Intl.DateTimeFormat("pt-BR", { month: "short" });
-const MONTH_YEAR = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
-const REL = new Intl.RelativeTimeFormat("pt-BR", { numeric: "auto" });
+const LOCALE = locale();
+const BRL = new Intl.NumberFormat(LOCALE, { style: "currency", currency: "BRL" });
+const BRL_COMPACT = new Intl.NumberFormat(LOCALE, { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 });
+const NUM = new Intl.NumberFormat(LOCALE);
+const NUM1 = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+const NUM2 = new Intl.NumberFormat(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const DATE = new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "2-digit", year: "numeric" });
+const DATE_SHORT = new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "short" });
+const DATE_LONG = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+const DATETIME = new Intl.DateTimeFormat(LOCALE, { dateStyle: "short", timeStyle: "short" });
+const MONTH = new Intl.DateTimeFormat(LOCALE, { month: "short" });
+const MONTH_YEAR = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
+const REL = new Intl.RelativeTimeFormat(LOCALE, { numeric: "auto" });
 
 /** Centavos → "R$ 1.234,56". */
 export function money(cents) {
@@ -20,7 +22,7 @@ export function money(cents) {
 
 export function moneyCompact(cents) {
   const value = (Number(cents) || 0) / 100;
-  return Math.abs(value) < 10000 ? BRL.format(value).replace(/,00$/, "") : BRL_COMPACT.format(value);
+  return Math.abs(value) < 10000 ? BRL.format(value).replace(/[,.]00$/, "") : BRL_COMPACT.format(value);
 }
 
 /** "R$ 1.234,56", "75", "75,5", "1234.5" → centavos (ou null). */
@@ -58,7 +60,7 @@ export function decimal2(value) {
 }
 
 export function percent(value) {
-  return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 0 }).format(value || 0);
+  return new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 0 }).format(value || 0);
 }
 
 /* ------------------------------------------------------------- datas */
@@ -122,14 +124,14 @@ export function relative(value) {
   if (!d) return "—";
   if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
     const days = daysBetween(value);
-    if (days === 0) return "hoje";
+    if (days === 0) return tr("hoje");
     if (Math.abs(days) < 30) return REL.format(-days, "day");
     if (Math.abs(days) < 365) return REL.format(-Math.round(days / 30.44), "month");
     return REL.format(-Math.round(days / 365.25), "year");
   }
   const diff = (d.getTime() - Date.now()) / 1000;
   const abs = Math.abs(diff);
-  if (abs < 45) return "agora";
+  if (abs < 45) return tr("agora");
   const units = [
     ["minute", 60],
     ["hour", 3600],
@@ -211,6 +213,16 @@ export function initials(name) {
 
 export function plural(count, one, many) {
   return `${number(count)} ${count === 1 ? one : many}`;
+}
+
+/* CSV: em português abre no Excel com ";" e vírgula decimal; em inglês, com "," e ponto. */
+export function csvDelimiter() {
+  return LOCALE === "pt-BR" ? ";" : ",";
+}
+
+export function csvMoney(cents) {
+  const text = ((Number(cents) || 0) / 100).toFixed(2);
+  return LOCALE === "pt-BR" ? text.replace(".", ",") : text;
 }
 
 export function bytes(size) {

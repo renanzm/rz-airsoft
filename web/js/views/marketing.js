@@ -8,25 +8,26 @@ import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
 import { setCrumbs } from "../ui/shell.js";
 import { bannerConfig, bannerHtml, exportBanner, prepareBannerMark, DEFAULT_BANNER } from "../docs/banner-doc.js";
+import { tr } from "../core/i18n.js";
 
 export function mount(el) {
-  setCrumbs([{ label: "Marketing", href: "/marketing" }]);
+  setCrumbs([{ label: tr("Marketing"), href: "/marketing" }]);
   el.innerHTML = String(html`<div class="page page-wide">
     <header class="page-head">
       <div class="page-head-main">
-        <h1 class="page-title">Marketing</h1>
-        <p class="page-desc">Banner da oficina no formato 4:5 (1080 × 1350). Edite os textos e baixe em PDF ou PNG para o Instagram e o WhatsApp.</p>
+        <h1 class="page-title">${tr("Marketing")}</h1>
+        <p class="page-desc">${tr("Banner da oficina no formato 4:5 (1080 × 1350). Edite os textos e baixe em PDF ou PNG para o Instagram e o WhatsApp.")}</p>
       </div>
       <div class="page-actions">
-        <button type="button" class="btn btn-secondary" data-act="png">${icon("image", { size: 16 })}Baixar PNG</button>
-        <button type="button" class="btn btn-primary" data-act="pdf">${icon("filePdf", { size: 16 })}Baixar PDF</button>
+        <button type="button" class="btn btn-secondary" data-act="png">${icon("image", { size: 16 })}${tr("Baixar PNG")}</button>
+        <button type="button" class="btn btn-primary" data-act="pdf">${icon("filePdf", { size: 16 })}${tr("Baixar PDF")}</button>
       </div>
     </header>
     <div class="banner-editor">
       <div class="stack-lg" data-form></div>
       <aside class="banner-preview">
         <div class="preview-viewport" data-viewport><div class="preview-scale" data-scale><div data-doc></div></div></div>
-        <p class="hint">Prévia em tamanho reduzido. O arquivo sai em alta resolução.</p>
+        <p class="hint">${tr("Prévia em tamanho reduzido. O arquivo sai em alta resolução.")}</p>
       </aside>
     </div>
   </div>`);
@@ -61,36 +62,36 @@ export function mount(el) {
       formEl,
       html`
         <section class="card">
-          <header class="card-head"><h2 class="card-title">Chamada principal</h2></header>
+          <header class="card-head"><h2 class="card-title">${tr("Chamada principal")}</h2></header>
           <div class="card-body stack">
-            <label class="field"><span class="label">Linha de apoio</span><input class="input" data-b="eyebrow" value="${c.eyebrow}" /></label>
+            <label class="field"><span class="label">${tr("Linha de apoio")}</span><input class="input" data-b="eyebrow" value="${c.eyebrow}" /></label>
             <div class="grid-2">
-              <label class="field"><span class="label">Título (Enter quebra a linha)</span><textarea class="textarea" rows="2" data-b="headline">${c.headline}</textarea></label>
-              <label class="field"><span class="label">Palavra em destaque</span><input class="input" data-b="highlight" value="${c.highlight}" /></label>
+              <label class="field"><span class="label">${tr("Título (Enter quebra a linha)")}</span><textarea class="textarea" rows="2" data-b="headline">${c.headline}</textarea></label>
+              <label class="field"><span class="label">${tr("Palavra em destaque")}</span><input class="input" data-b="highlight" value="${c.highlight}" /></label>
             </div>
           </div>
         </section>
         <section class="card">
-          <header class="card-head"><div><h2 class="card-title">Serviços</h2><p class="card-desc">Cinco cartões; o primeiro ganha destaque.</p></div></header>
+          <header class="card-head"><div><h2 class="card-title">${tr("Serviços")}</h2><p class="card-desc">${tr("Cinco cartões; o primeiro ganha destaque.")}</p></div></header>
           <div class="card-body stack">
             ${c.services.slice(0, 5).map((svc, i) => html`<div class="banner-svc" data-key="svc-${i}">
               <span class="cat-num">${String(i + 1).padStart(2, "0")}</span>
-              <input class="input" data-svc="${i}" data-svc-field="title" value="${svc.title}" aria-label="Título do serviço ${i + 1}" />
-              <input class="input" data-svc="${i}" data-svc-field="copy" value="${svc.copy}" aria-label="Descrição do serviço ${i + 1}" />
+              <input class="input" data-svc="${i}" data-svc-field="title" value="${svc.title}" aria-label="${tr("Título do serviço {n}", { n: i + 1 })}" />
+              <input class="input" data-svc="${i}" data-svc-field="copy" value="${svc.copy}" aria-label="${tr("Descrição do serviço {n}", { n: i + 1 })}" />
             </div>`)}
           </div>
         </section>
         <section class="card">
-          <header class="card-head"><h2 class="card-title">Conectores e contato</h2></header>
+          <header class="card-head"><h2 class="card-title">${tr("Conectores e contato")}</h2></header>
           <div class="card-body stack">
-            <label class="switch"><input type="checkbox" data-b-check="connectors" ${c.connectors ? "checked" : ""} /><span>Mostrar a faixa de troca de conectores (XT60 e T-Deans)</span></label>
+            <label class="switch"><input type="checkbox" data-b-check="connectors" ${c.connectors ? "checked" : ""} /><span>${tr("Mostrar a faixa de troca de conectores (XT60 e T-Deans)")}</span></label>
             <div class="grid-2">
-              <label class="field"><span class="label">Chamada do contato</span><input class="input" data-b="cta" value="${c.cta}" /></label>
-              <label class="field"><span class="label">Telefone</span><input class="input" data-b="phone" inputmode="tel" value="${fmtPhone(c.phone)}" placeholder="Usa o telefone da oficina" /></label>
+              <label class="field"><span class="label">${tr("Chamada do contato")}</span><input class="input" data-b="cta" value="${c.cta}" /></label>
+              <label class="field"><span class="label">${tr("Telefone")}</span><input class="input" data-b="phone" inputmode="tel" value="${fmtPhone(c.phone)}" placeholder="${tr("Usa o telefone da oficina")}" /></label>
               <label class="field"><span class="label">Instagram</span><input class="input" data-b="handle" value="${c.handle}" placeholder="@rzairsoft" /></label>
-              <label class="field"><span class="label">Rodapé</span><input class="input" data-b="footer" value="${c.footer}" /></label>
+              <label class="field"><span class="label">${tr("Rodapé")}</span><input class="input" data-b="footer" value="${c.footer}" /></label>
             </div>
-            <div class="row"><button type="button" class="btn btn-ghost btn-sm" data-act="reset">${icon("undo", { size: 14 })}Voltar ao texto original</button></div>
+            <div class="row"><button type="button" class="btn btn-ghost btn-sm" data-act="reset">${icon("undo", { size: 14 })}${tr("Voltar ao texto original")}</button></div>
           </div>
         </section>
       `
@@ -120,7 +121,7 @@ export function mount(el) {
       } else if (act === "reset") {
         const s = data.settings();
         data.saveSettings({ ...s, marketing: { ...(s.marketing || {}), banner: { ...DEFAULT_BANNER, phone: "", handle: undefined } } }, { debounce: 0 });
-        toast.success("Textos originais restaurados");
+        toast.success(tr("Textos originais restaurados"));
       }
     }),
   ];

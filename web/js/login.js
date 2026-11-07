@@ -1,6 +1,9 @@
 /* Acesso: cria o primeiro usuário ou entra. A senha nunca é guardada no navegador. */
 import { api, ApiError } from "./core/api.js";
 import { icon } from "./ui/icons.js";
+import { tr, locale, setLanguage, localizePage } from "./core/i18n.js";
+
+localizePage();
 
 const USER_RE = /^[A-Za-z0-9._-]{3,32}$/;
 const $ = (id) => document.getElementById(id);
@@ -59,7 +62,7 @@ function score(value) {
 
 function paintStrength() {
   const s = score(pass.value);
-  const labels = ["Muito fraca", "Fraca", "Razoável", "Boa", "Forte"];
+  const labels = [tr("Muito fraca"), tr("Fraca"), tr("Razoável"), tr("Boa"), tr("Forte")];
   const colors = ["var(--danger)", "var(--danger)", "var(--warning)", "var(--success)", "var(--success)"];
   strength.querySelector(".strength-bar span").style.width = `${pass.value ? Math.max(8, (s / 4) * 100) : 0}%`;
   strength.querySelector(".strength-bar span").style.background = colors[s];
@@ -69,9 +72,9 @@ function paintStrength() {
 function setMode(next) {
   mode = next;
   const setup = mode === "setup";
-  title.textContent = setup ? "Criar acesso" : "Entrar";
-  desc.textContent = setup ? "Primeira vez por aqui: escolha o usuário e uma senha forte para proteger os dados da oficina." : "Use o usuário e a senha desta instalação.";
-  document.title = `${setup ? "Criar acesso" : "Entrar"} · RZ Airsoft`;
+  title.textContent = setup ? tr("Criar acesso") : tr("Entrar");
+  desc.textContent = setup ? tr("Primeira vez por aqui: escolha o usuário e uma senha forte para proteger os dados da oficina.") : tr("Use o usuário e a senha desta instalação.");
+  document.title = `${setup ? tr("Criar acesso") : tr("Entrar")} · RZ Airsoft`;
   pass.autocomplete = setup ? "new-password" : "current-password";
   confirmField.hidden = !setup;
   confirmInput.required = setup;
@@ -79,7 +82,7 @@ function setMode(next) {
   remember.hidden = setup;
   $("forgot").hidden = setup;
   $("username-hint").hidden = !setup;
-  submit.textContent = setup ? "Criar acesso e entrar" : "Entrar";
+  submit.textContent = setup ? tr("Criar acesso e entrar") : tr("Entrar");
   status.hidden = true;
   form.hidden = false;
   user.focus();
@@ -88,15 +91,15 @@ function setMode(next) {
 function validate() {
   user.value = user.value.trim();
   if (!USER_RE.test(user.value)) {
-    showError("Usuário inválido: use de 3 a 32 caracteres (letras, números, ponto, hífen ou sublinhado).", user);
+    showError(tr("Usuário inválido: use de 3 a 32 caracteres (letras, números, ponto, hífen ou sublinhado)."), user);
     return false;
   }
   if (pass.value.length < 8) {
-    showError("A senha precisa ter pelo menos 8 caracteres.", pass);
+    showError(tr("A senha precisa ter pelo menos 8 caracteres."), pass);
     return false;
   }
   if (mode === "setup" && pass.value !== confirmInput.value) {
-    showError("A confirmação não confere com a senha.", confirmInput);
+    showError(tr("A confirmação não confere com a senha."), confirmInput);
     return false;
   }
   showError("");
@@ -118,19 +121,19 @@ async function onSubmit(event) {
     location.replace(safeNext());
   } catch (error) {
     setBusy(false);
-    if (!(error instanceof ApiError)) return showError("Algo deu errado. Tente de novo.");
-    if (error.status === 0) return showError("Sem conexão com o servidor. Confira se a janela do RZ Airsoft está aberta.");
+    if (!(error instanceof ApiError)) return showError(tr("Algo deu errado. Tente de novo."));
+    if (error.status === 0) return showError(tr("Sem conexão com o servidor. Confira se a janela do RZ Airsoft está aberta."));
     if (error.status === 429) {
       const wait = Number(error.body?.retryAfter) || 60;
-      return showError(`Muitas tentativas. Aguarde ${wait >= 120 ? `${Math.ceil(wait / 60)} minutos` : `${wait} segundos`} e tente de novo.`, pass);
+      return showError(wait >= 120 ? tr("Muitas tentativas. Aguarde {n} minutos e tente de novo.", { n: Math.ceil(wait / 60) }) : tr("Muitas tentativas. Aguarde {n} segundos e tente de novo.", { n: wait }), pass);
     }
-    if (error.status === 401) return showError("Usuário ou senha incorretos.", pass);
+    if (error.status === 401) return showError(tr("Usuário ou senha incorretos."), pass);
     if (error.status === 409) {
       setMode("login");
-      return showError("O acesso já foi criado. Entre com o usuário e a senha.", user);
+      return showError(tr("O acesso já foi criado. Entre com o usuário e a senha."), user);
     }
-    if (error.status === 403) return showError("Bloqueado por segurança. Recarregue a página e tente de novo.");
-    showError("Não foi possível entrar agora. Tente de novo.");
+    if (error.status === 403) return showError(tr("Bloqueado por segurança. Recarregue a página e tente de novo."));
+    showError(tr("Não foi possível entrar agora. Tente de novo."));
   }
 }
 
@@ -139,11 +142,15 @@ eye.addEventListener("click", () => {
   const show = pass.type === "password";
   pass.type = show ? "text" : "password";
   eye.setAttribute("aria-pressed", String(show));
-  eye.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
+  eye.setAttribute("aria-label", show ? tr("Ocultar senha") : tr("Mostrar senha"));
   eye.innerHTML = String(icon(show ? "eyeOff" : "eye", { size: 17 }));
 });
 pass.addEventListener("input", () => mode === "setup" && paintStrength());
 form.addEventListener("submit", onSubmit);
+for (const button of document.querySelectorAll("[data-lang]")) {
+  button.setAttribute("aria-pressed", String(button.dataset.lang === locale()));
+  button.addEventListener("click", () => setLanguage(button.dataset.lang));
+}
 
 (async () => {
   try {
@@ -154,6 +161,6 @@ form.addEventListener("submit", onSubmit);
     }
     setMode(session.setupRequired ? "setup" : "login");
   } catch {
-    status.textContent = "Não foi possível falar com o servidor. Abra o sistema pelo atalho INICIAR_RZ_WEB.bat neste computador.";
+    status.textContent = tr("Não foi possível falar com o servidor. Abra o sistema pelo atalho INICIAR_RZ_WEB.bat neste computador.");
   }
 })();

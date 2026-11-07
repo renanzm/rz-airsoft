@@ -1,6 +1,7 @@
 /* Acesso aos dados já com os formatos normalizados do modelo. */
 import * as store from "./store.js";
 import { catalogWithDefaults, normalizeClient, normalizeOrder, settingsWithDefaults, compareNumbers } from "./model.js";
+import { locale } from "./i18n.js";
 
 export function settings() {
   return settingsWithDefaults(store.get("settings", "main"));
@@ -32,7 +33,7 @@ export function saveOrder(next, options) {
 }
 
 export function clients() {
-  return store.list("clients").map(normalizeClient).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  return store.list("clients").map(normalizeClient).sort((a, b) => a.name.localeCompare(b.name, locale()));
 }
 
 export function client(id) {
@@ -56,7 +57,7 @@ export function sortOrders(list, key = "number", dir = "desc") {
   return [...list].sort((a, b) => {
     if (key === "number") return sign * compareNumbers(a.number, b.number) || sign * String(a.createdAt).localeCompare(String(b.createdAt));
     if (key === "total") return sign * ((a._total || 0) - (b._total || 0));
-    return sign * String(value(a)).localeCompare(String(value(b)), "pt-BR", { numeric: true });
+    return sign * String(value(a)).localeCompare(String(value(b)), locale(), { numeric: true });
   });
 }
 

@@ -1,4 +1,4 @@
-/* Aplica o tema antes do primeiro desenho da página (evita piscar). */
+/* Aplica o tema e o idioma antes do primeiro desenho da página (evita piscar). */
 (function () {
   var pref = "dark";
   try {
@@ -12,6 +12,7 @@
   root.style.colorScheme = dark ? "dark" : "light";
   try {
     if (localStorage.getItem("rz3:sidebar") === "collapsed") root.dataset.sidebar = "collapsed";
+    if (localStorage.getItem("rz3:lang") === "en-US") root.lang = "en-US";
   } catch (error) {
     /* idem */
   }

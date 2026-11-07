@@ -1,6 +1,7 @@
 /* Notificações discretas no canto da tela, com ação opcional (ex.: Desfazer). */
 import { esc } from "../core/dom.js";
 import { icon } from "./icons.js";
+import { tr } from "../core/i18n.js";
 
 let region = null;
 
@@ -9,7 +10,7 @@ function ensureRegion() {
   region = document.createElement("section");
   region.className = "toasts";
   region.setAttribute("aria-live", "polite");
-  region.setAttribute("aria-label", "Notificações");
+  region.setAttribute("aria-label", tr("Notificações"));
   document.body.appendChild(region);
   return region;
 }
@@ -33,7 +34,7 @@ export function toast(message, { kind = "success", description = "", action = nu
       `<span class="toast-icon">${icon(ICONS[k] || "info", { size: 18, className: k === "loading" ? "spin" : "" })}</span>` +
       `<div class="toast-body"><p class="toast-title">${esc(msg)}</p>${desc ? `<p class="toast-desc">${esc(desc)}</p>` : ""}</div>` +
       (action ? `<button type="button" class="toast-action">${esc(action.label)}</button>` : "") +
-      `<button type="button" class="toast-close" aria-label="Fechar">${icon("x", { size: 14 })}</button>`;
+      `<button type="button" class="toast-close" aria-label="${tr("Fechar")}">${icon("x", { size: 14 })}</button>`;
   };
   paint(message, kind, description);
 
